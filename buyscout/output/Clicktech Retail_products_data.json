@@ -1,0 +1,712 @@
+[
+    {
+        "data_asin": "B0CKPBBFS2",
+        "price": "NA",
+        "brand_name": "NA",
+        "delivery_time": "NA",
+        "winning_seller": "NA",
+        "seller_rating": "NA",
+        "other_sellers": [],
+        "best_seller_rating": [],
+        "category": "NA",
+        "pincode": "400001",
+        "latitude": 19.0023791,
+        "longitude": 72.8575132
+    },
+    {
+        "data_asin": "B0CKN5LM2H",
+        "price": "89.",
+        "brand_name": "JIALTO",
+        "delivery_time": "Saturday, 3 May",
+        "winning_seller": "Clicktech Retail Private Ltd",
+        "seller_rating": "4.0 ",
+        "other_sellers": [
+            {
+                "offer_price": "177.",
+                "offer_seller": "Clicktech Retail",
+                "offer_seller_rating": "Seller rating is 5 out of 5 stars"
+            },
+            {
+                "offer_price": "226.",
+                "offer_seller": "ETrade Online",
+                "offer_seller_rating": "Seller rating is 4 out of 5 stars"
+            },
+            {
+                "offer_price": "177.",
+                "offer_seller": "Clicktech Retail Private Ltd",
+                "offer_seller_rating": "NA"
+            }
+        ],
+        "best_seller_rating": [
+            {
+                "rank": 7747,
+                "category": "Home & Kitchen"
+            },
+            {
+                "rank": 48,
+                "category": "Wall Hooks"
+            }
+        ],
+        "category": "Wall Hooks",
+        "pincode": "400001",
+        "latitude": 19.0023791,
+        "longitude": 72.8575132
+    },
+    {
+        "data_asin": "B07PV41DQ9",
+        "price": "2,256.",
+        "brand_name": "Allen Cooper",
+        "delivery_time": "Tuesday, 6 May",
+        "winning_seller": "Clicktech Retail Private Ltd",
+        "seller_rating": "3.5 ",
+        "other_sellers": [
+            {
+                "offer_price": "2,375.",
+                "offer_seller": "Clicktech Retail",
+                "offer_seller_rating": "Seller rating is 5 out of 5 stars"
+            }
+        ],
+        "best_seller_rating": [
+            {
+                "rank": 32539,
+                "category": "Industrial & Scientific"
+            },
+            {
+                "rank": 606,
+                "category": "Safety Shoes"
+            }
+        ],
+        "category": "Safety Shoes",
+        "pincode": "400001",
+        "latitude": 19.0023791,
+        "longitude": 72.8575132
+    },
+    {
+        "data_asin": "B08X2SB4VB",
+        "price": "139.",
+        "brand_name": "JIALTO",
+        "delivery_time": "Saturday, 3 May",
+        "winning_seller": "Clicktech Retail Private Ltd",
+        "seller_rating": "4.0 ",
+        "other_sellers": [
+            {
+                "offer_price": "196.",
+                "offer_seller": "Clicktech Retail",
+                "offer_seller_rating": "Seller rating is 5 out of 5 stars"
+            },
+            {
+                "offer_price": "251.",
+                "offer_seller": "ZEXMON",
+                "offer_seller_rating": "Seller rating is 4 out of 5 stars"
+            }
+        ],
+        "best_seller_rating": [
+            {
+                "rank": 15595,
+                "category": "Home & Kitchen"
+            },
+            {
+                "rank": 101,
+                "category": "Wall Hooks"
+            }
+        ],
+        "category": "Wall Hooks",
+        "pincode": "400001",
+        "latitude": 19.0023791,
+        "longitude": 72.8575132
+    },
+    {
+        "data_asin": "B07MKD1SGR",
+        "price": "94.",
+        "brand_name": "Electronic Spices",
+        "delivery_time": "Saturday, 3 May",
+        "winning_seller": "Clicktech Retail Private Ltd",
+        "seller_rating": "3.6 ",
+        "other_sellers": [
+            {
+                "offer_price": "129.",
+                "offer_seller": "Clicktech Retail",
+                "offer_seller_rating": "Seller rating is 5 out of 5 stars"
+            },
+            {
+                "offer_price": "129.",
+                "offer_seller": "Electronic Spices",
+                "offer_seller_rating": "Seller rating is 2.5 out of 5 stars"
+            }
+        ],
+        "best_seller_rating": [
+            {
+                "rank": 1135,
+                "category": "Industrial & Scientific"
+            },
+            {
+                "rank": 2,
+                "category": "Printed Circuit Boards"
+            }
+        ],
+        "category": "Printed Circuit Boards",
+        "pincode": "400001",
+        "latitude": 19.0023791,
+        "longitude": 72.8575132
+    },
+    {
+        "data_asin": "B071CZJKPL",
+        "price": "1,327.",
+        "brand_name": "MECO",
+        "delivery_time": "Thursday, 8 May",
+        "winning_seller": "PARAMOUNT TRADERS bangalore",
+        "seller_rating": "3.8 ",
+        "other_sellers": [
+            {
+                "offer_price": "1,394.",
+                "offer_seller": "Industrialkart",
+                "offer_seller_rating": "Seller rating is 4.5 out of 5 stars"
+            },
+            {
+                "offer_price": "1,395.",
+                "offer_seller": "Meter King",
+                "offer_seller_rating": "Seller rating is 2 out of 5 stars"
+            },
+            {
+                "offer_price": "1,323.",
+                "offer_seller": "Techno instruments",
+                "offer_seller_rating": "Seller rating is 3 out of 5 stars"
+            },
+            {
+                "offer_price": "1,399.",
+                "offer_seller": "DIJKART",
+                "offer_seller_rating": "Seller rating is 4 out of 5 stars"
+            },
+            {
+                "offer_price": "1,420.",
+                "offer_seller": "R-SALES.",
+                "offer_seller_rating": "Seller rating is 1 out of 5 stars"
+            },
+            {
+                "offer_price": "1,440.",
+                "offer_seller": "Skyking Instruments",
+                "offer_seller_rating": "Seller rating is 4.5 out of 5 stars"
+            },
+            {
+                "offer_price": "1,499.",
+                "offer_seller": "Meter Science",
+                "offer_seller_rating": "Seller rating is 2.5 out of 5 stars"
+            },
+            {
+                "offer_price": "1,500.",
+                "offer_seller": "METRO INSTRUMENTS",
+                "offer_seller_rating": "NA"
+            },
+            {
+                "offer_price": "1,699.",
+                "offer_seller": "avsCARTindia\u00ae",
+                "offer_seller_rating": "Seller rating is 3.5 out of 5 stars"
+            },
+            {
+                "offer_price": "1,710.",
+                "offer_seller": "EDVANTEST MEASURE TECHNOLOGIES PRIVATE LIMITED",
+                "offer_seller_rating": "Seller rating is 2.5 out of 5 stars"
+            }
+        ],
+        "best_seller_rating": [
+            {
+                "rank": 3522,
+                "category": "Home Improvement"
+            },
+            {
+                "rank": 3,
+                "category": "Multi Testers"
+            }
+        ],
+        "category": "Multi Testers",
+        "pincode": "400001",
+        "latitude": 19.0023791,
+        "longitude": 72.8575132
+    },
+    {
+        "data_asin": "B09J91V6S3",
+        "price": "1,596.",
+        "brand_name": "MARCOWARE",
+        "delivery_time": "Saturday, 3 May",
+        "winning_seller": "Clicktech Retail India",
+        "seller_rating": "4.2 ",
+        "other_sellers": [
+            {
+                "offer_price": "1,596.",
+                "offer_seller": "Clicktech Retail",
+                "offer_seller_rating": "Seller rating is 5 out of 5 stars"
+            }
+        ],
+        "best_seller_rating": [
+            {
+                "rank": 5940,
+                "category": "Home Improvement"
+            },
+            {
+                "rank": 18,
+                "category": "Handheld Showers"
+            }
+        ],
+        "category": "Handheld Showers",
+        "pincode": "400001",
+        "latitude": 19.0023791,
+        "longitude": 72.8575132
+    },
+    {
+        "data_asin": "B0B51JS8LC",
+        "price": "139.",
+        "brand_name": "JIALTO",
+        "delivery_time": "Sunday, 4 May",
+        "winning_seller": "Clicktech Retail Private Ltd",
+        "seller_rating": "4.1 ",
+        "other_sellers": [
+            {
+                "offer_price": "182.",
+                "offer_seller": "Clicktech Retail",
+                "offer_seller_rating": "Seller rating is 5 out of 5 stars"
+            }
+        ],
+        "best_seller_rating": [
+            {
+                "rank": 85801,
+                "category": "Home & Kitchen"
+            },
+            {
+                "rank": 524,
+                "category": "Wall Hooks"
+            }
+        ],
+        "category": "Wall Hooks",
+        "pincode": "400001",
+        "latitude": 19.0023791,
+        "longitude": 72.8575132
+    },
+    {
+        "data_asin": "B0CKTB8MCL",
+        "price": "252.",
+        "brand_name": "MAAUVTOR",
+        "delivery_time": "Sunday, 4 May",
+        "winning_seller": "Clicktech Retail Private Ltd",
+        "seller_rating": "3.7 ",
+        "other_sellers": [
+            {
+                "offer_price": "252.",
+                "offer_seller": "Clicktech Retail",
+                "offer_seller_rating": "Seller rating is 5 out of 5 stars"
+            }
+        ],
+        "best_seller_rating": [
+            {
+                "rank": 11007,
+                "category": "Home Improvement"
+            },
+            {
+                "rank": 149,
+                "category": "Cleaning Gloves"
+            }
+        ],
+        "category": "Cleaning Gloves",
+        "pincode": "400001",
+        "latitude": 19.0023791,
+        "longitude": 72.8575132
+    },
+    {
+        "data_asin": "B09FPHTLND",
+        "price": "159.",
+        "brand_name": "NA",
+        "delivery_time": "Saturday, 3 May",
+        "winning_seller": "Clicktech Retail",
+        "seller_rating": "3.6 ",
+        "other_sellers": [
+            {
+                "offer_price": "112.",
+                "offer_seller": "Clicktech Retail Private Ltd",
+                "offer_seller_rating": "Seller rating is 4 out of 5 stars"
+            },
+            {
+                "offer_price": "159.",
+                "offer_seller": "Clicktech Retail",
+                "offer_seller_rating": "Seller rating is 5 out of 5 stars"
+            }
+        ],
+        "best_seller_rating": [
+            {
+                "rank": 49866,
+                "category": "Home & Kitchen"
+            },
+            {
+                "rank": 157,
+                "category": "Toothbrush Holders"
+            }
+        ],
+        "category": "Toothbrush Holders",
+        "pincode": "400001",
+        "latitude": 19.0023791,
+        "longitude": 72.8575132
+    },
+    {
+        "data_asin": "B06XWVFPG4",
+        "price": "14,499.",
+        "brand_name": "Bosch",
+        "delivery_time": "Sunday, 4 May",
+        "winning_seller": "ALAMDAR TOOLS HUB",
+        "seller_rating": "4.3 ",
+        "other_sellers": [],
+        "best_seller_rating": [
+            {
+                "rank": 905,
+                "category": "Home Improvement"
+            },
+            {
+                "rank": 4,
+                "category": "Impact Drivers"
+            }
+        ],
+        "category": "Impact Drivers",
+        "pincode": "400001",
+        "latitude": 19.0023791,
+        "longitude": 72.8575132
+    },
+    {
+        "data_asin": "B093Y7S2WW",
+        "price": "299.",
+        "brand_name": "JAAMSO ROYALS",
+        "delivery_time": "Saturday, 3 May",
+        "winning_seller": "JAAMSO ROYALS",
+        "seller_rating": "3.8 ",
+        "other_sellers": [
+            {
+                "offer_price": "884.",
+                "offer_seller": "Clicktech Retail",
+                "offer_seller_rating": "Seller rating is 5 out of 5 stars"
+            }
+        ],
+        "best_seller_rating": [
+            {
+                "rank": 2807,
+                "category": "Home Improvement"
+            },
+            {
+                "rank": 57,
+                "category": "Wall Stickers"
+            }
+        ],
+        "category": "Wall Stickers",
+        "pincode": "400001",
+        "latitude": 19.0023791,
+        "longitude": 72.8575132
+    },
+    {
+        "data_asin": "B0CKN5WQ2S",
+        "price": "199.",
+        "brand_name": "JIALTO",
+        "delivery_time": "Saturday, 3 May",
+        "winning_seller": "ETrade Online",
+        "seller_rating": "4.0 ",
+        "other_sellers": [
+            {
+                "offer_price": "200.",
+                "offer_seller": "Clicktech Retail",
+                "offer_seller_rating": "Seller rating is 5 out of 5 stars"
+            },
+            {
+                "offer_price": "227.",
+                "offer_seller": "Clicktech Retail Private Ltd",
+                "offer_seller_rating": "Seller rating is 4 out of 5 stars"
+            }
+        ],
+        "best_seller_rating": [
+            {
+                "rank": 141076,
+                "category": "Home & Kitchen"
+            },
+            {
+                "rank": 816,
+                "category": "Wall Hooks"
+            }
+        ],
+        "category": "Wall Hooks",
+        "pincode": "400001",
+        "latitude": 19.0023791,
+        "longitude": 72.8575132
+    },
+    {
+        "data_asin": "B0BN4NZL18",
+        "price": "205.",
+        "brand_name": "NA",
+        "delivery_time": "Monday, 5 May",
+        "winning_seller": "Clicktech Retail Private Ltd",
+        "seller_rating": "1.0 ",
+        "other_sellers": [
+            {
+                "offer_price": "205.",
+                "offer_seller": "Clicktech Retail",
+                "offer_seller_rating": "Seller rating is 5 out of 5 stars"
+            },
+            {
+                "offer_price": "149.",
+                "offer_seller": "Electronic Spices",
+                "offer_seller_rating": "Seller rating is 2.5 out of 5 stars"
+            }
+        ],
+        "best_seller_rating": [
+            {
+                "rank": 143779,
+                "category": "Electronics"
+            },
+            {
+                "rank": 79,
+                "category": "Multimedia Speaker Systems"
+            }
+        ],
+        "category": "Multimedia Speaker Systems",
+        "pincode": "400001",
+        "latitude": 19.0023791,
+        "longitude": 72.8575132
+    },
+    {
+        "data_asin": "B0CHP2HH7B",
+        "price": "NA",
+        "brand_name": "ALTON",
+        "delivery_time": "NA",
+        "winning_seller": "NA",
+        "seller_rating": "4.1 ",
+        "other_sellers": [],
+        "best_seller_rating": [
+            {
+                "rank": 275,
+                "category": "Home Improvement"
+            },
+            {
+                "rank": 6,
+                "category": "Health Faucets"
+            }
+        ],
+        "category": "Health Faucets",
+        "pincode": "400001",
+        "latitude": 19.0023791,
+        "longitude": 72.8575132
+    },
+    {
+        "data_asin": "B08L586DLT",
+        "price": "80.",
+        "brand_name": "Electronic Spices",
+        "delivery_time": "Tuesday, 6 May",
+        "winning_seller": "Electronic Spices",
+        "seller_rating": "4.1 ",
+        "other_sellers": [
+            {
+                "offer_price": "197.",
+                "offer_seller": "Clicktech Retail",
+                "offer_seller_rating": "Seller rating is 5 out of 5 stars"
+            },
+            {
+                "offer_price": "200.",
+                "offer_seller": "Clicktech Retail Private Ltd",
+                "offer_seller_rating": "Seller rating is 4 out of 5 stars"
+            }
+        ],
+        "best_seller_rating": [
+            {
+                "rank": 229813,
+                "category": "Home & Kitchen"
+            },
+            {
+                "rank": 136,
+                "category": "Lamp Bases"
+            }
+        ],
+        "category": "Lamp Bases",
+        "pincode": "400001",
+        "latitude": 19.0023791,
+        "longitude": 72.8575132
+    },
+    {
+        "data_asin": "B0CC9ZQ433",
+        "price": "1,099.",
+        "brand_name": "NA",
+        "delivery_time": "Saturday, 3 May",
+        "winning_seller": "Clicktech Retail Private Ltd",
+        "seller_rating": "2.4 ",
+        "other_sellers": [
+            {
+                "offer_price": "1,109.",
+                "offer_seller": "AVA INTERNATIONAL PRIVATE LIMITED",
+                "offer_seller_rating": "Seller rating is 4 out of 5 stars"
+            },
+            {
+                "offer_price": "1,198.",
+                "offer_seller": "Clicktech Retail",
+                "offer_seller_rating": "Seller rating is 5 out of 5 stars"
+            },
+            {
+                "offer_price": "1,349.",
+                "offer_seller": "AVA INTERNATIONAL PRIVATE LIMITED",
+                "offer_seller_rating": "Seller rating is 4 out of 5 stars"
+            }
+        ],
+        "best_seller_rating": [
+            {
+                "rank": 5399,
+                "category": "Industrial & Scientific"
+            },
+            {
+                "rank": 13,
+                "category": "Work Utility & Safety Overalls & Coveralls"
+            }
+        ],
+        "category": "Work Utility & Safety Overalls & Coveralls",
+        "pincode": "400001",
+        "latitude": 19.0023791,
+        "longitude": 72.8575132
+    },
+    {
+        "data_asin": "B0CMTYCYWG",
+        "price": "171.",
+        "brand_name": "JIALTO",
+        "delivery_time": "Sunday, 4 May",
+        "winning_seller": "Clicktech Retail",
+        "seller_rating": "3.5 ",
+        "other_sellers": [],
+        "best_seller_rating": [
+            {
+                "rank": 586007,
+                "category": "Home & Kitchen"
+            },
+            {
+                "rank": 3128,
+                "category": "Wall Hooks"
+            }
+        ],
+        "category": "Wall Hooks",
+        "pincode": "400001",
+        "latitude": 19.0023791,
+        "longitude": 72.8575132
+    },
+    {
+        "data_asin": "B0C191Z29J",
+        "price": "385.",
+        "brand_name": "Foora",
+        "delivery_time": "Saturday, 3 May",
+        "winning_seller": "Clicktech Retail Private Ltd",
+        "seller_rating": "3.3 ",
+        "other_sellers": [
+            {
+                "offer_price": "400.",
+                "offer_seller": "Foora Locks Pvt. Ltd",
+                "offer_seller_rating": "Seller rating is 2 out of 5 stars"
+            },
+            {
+                "offer_price": "402.",
+                "offer_seller": "Clicktech Retail",
+                "offer_seller_rating": "Seller rating is 5 out of 5 stars"
+            }
+        ],
+        "best_seller_rating": [
+            {
+                "rank": 14965,
+                "category": "Sports, Fitness & Outdoors"
+            },
+            {
+                "rank": 52,
+                "category": "Cycling Cable Locks"
+            }
+        ],
+        "category": "Cycling Cable Locks",
+        "pincode": "400001",
+        "latitude": 19.0023791,
+        "longitude": 72.8575132
+    },
+    {
+        "data_asin": "B08Q3LRPML",
+        "price": "569.",
+        "brand_name": "Ki",
+        "delivery_time": "Monday, 5 May",
+        "winning_seller": "Clicktech Retail",
+        "seller_rating": "3.3 ",
+        "other_sellers": [
+            {
+                "offer_price": "839.",
+                "offer_seller": "KIDLEN INDIA LLP",
+                "offer_seller_rating": "Seller rating is 3.5 out of 5 stars"
+            },
+            {
+                "offer_price": "899.",
+                "offer_seller": "Clicktech Retail Private Ltd",
+                "offer_seller_rating": "Seller rating is 4 out of 5 stars"
+            }
+        ],
+        "best_seller_rating": [
+            {
+                "rank": 92881,
+                "category": "Industrial & Scientific"
+            },
+            {
+                "rank": 897,
+                "category": "Pipe Fittings"
+            }
+        ],
+        "category": "Pipe Fittings",
+        "pincode": "400001",
+        "latitude": 19.0023791,
+        "longitude": 72.8575132
+    },
+    {
+        "data_asin": "B0CBSF49NZ",
+        "price": "899.",
+        "brand_name": "Kayra Decor",
+        "delivery_time": "Sunday, 4 May",
+        "winning_seller": "Clicktech Retail",
+        "seller_rating": "5.0 ",
+        "other_sellers": [
+            {
+                "offer_price": "899.",
+                "offer_seller": "Clicktech Retail Private Ltd",
+                "offer_seller_rating": "Seller rating is 4 out of 5 stars"
+            }
+        ],
+        "best_seller_rating": [
+            {
+                "rank": 162668,
+                "category": "Home Improvement"
+            },
+            {
+                "rank": 1565,
+                "category": "Painting Stencils"
+            }
+        ],
+        "category": "Painting Stencils",
+        "pincode": "400001",
+        "latitude": 19.0023791,
+        "longitude": 72.8575132
+    },
+    {
+        "data_asin": "B0BTPFLZXB",
+        "price": "6,893.",
+        "brand_name": "Fevicol",
+        "delivery_time": "NA",
+        "winning_seller": "Clicktech Retail Private Ltd",
+        "seller_rating": "NA",
+        "other_sellers": [
+            {
+                "offer_price": "7,376.",
+                "offer_seller": "Clicktech Retail",
+                "offer_seller_rating": "Seller rating is 5 out of 5 stars"
+            }
+        ],
+        "best_seller_rating": [
+            {
+                "rank": 191,
+                "category": "Industrial & Scientific"
+            },
+            {
+                "rank": 89,
+                "category": "Universal Adhesives"
+            }
+        ],
+        "category": "Universal Adhesives",
+        "pincode": "400001",
+        "latitude": 19.0023791,
+        "longitude": 72.8575132
+    }
+]

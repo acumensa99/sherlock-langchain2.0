@@ -1,0 +1,123 @@
+import asyncio
+import json
+import random
+import time
+from datetime import datetime
+from playwright.async_api import async_playwright
+from fastmcp import FastMCP
+import logging
+from redis.asyncio import from_url
+from playwright_stealth import stealth_async
+
+mcp = FastMCP("FraudDetection")
+logging.basicConfig(level=logging.DEBUG)
+REDIS_URL = "redis://default:JMPog04EGI2MVcbO3HDPC9clDNyztfBX@redis-19800.crce179.ap-south-1-1.ec2.redns.redis-cloud.com:19800"
+USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64)...",
+    "Mozilla/5.0 (X11; Linux x86_64)...",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)..."
+]
+proxy_url = "http://geo.iproyal.com:12321"
+proxy_credentials = "acumensa2:Acumensa321_country-in_streaming-1"
+
+async def run_check(phone_number: str) -> dict:
+    logging.info("[Amazon] Starting check with proxy")
+
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=True,
+                                          args=["--disable-gpu", "--no-sandbox", "--disable-dev-shm-usage"],
+                                          proxy={"server": proxy_url, "username": proxy_credentials.split(":")[0],
+                                                 "password": proxy_credentials.split(":")[1]}
+
+                                          )
+        context = await browser.new_context(
+            user_agent=random.choice(USER_AGENTS),
+            extra_http_headers={
+                "Accept-Language": "en-US,en;q=0.9",
+                "Referer": "https://www.google.com/",
+                "DNT": "1",
+                "Upgrade-Insecure-Requests": "1"
+            }
+        )
+
+        page = await context.new_page()
+        await stealth_async(page)
+
+        try:
+            start_time = time.time()
+
+            await page.goto("https://www.amazon.in")
+            await page.click("//a[@data-nav-role='signin']")
+            await asyncio.sleep(1)
+
+            input_value = phone_number if "@" in phone_number else f"+91{phone_number}"
+            await page.fill('input#ap_email, input#ap_email_login', input_value)
+            await page.click('span#continue')
+            await page.wait_for_selector('input#ap_password', timeout=30000)
+            content = await page.content()
+
+            if 'type="password"' in content or "reset required" in content:
+                status = "Present"
+                associated = True
+            elif "new to Amazon" in content or "Incorrect" in content:
+                status = "Absent"
+                associated = False
+            else:
+                status = "Unknown"
+                associated = False
+
+            latency = int((time.time() - start_time) * 1000)
+            return {
+                "status": status,
+                "associated": associated,
+                "responseTimeMs": latency
+            }
+
+        except Exception as e:
+            logging.error(f"[Amazon] Error: {e}")
+            return {
+                "status": "Present",
+              #  "error": str(e),
+                "associated": True
+            }
+
+        finally:
+            await browser.close()
+
+@mcp.tool()
+async def check_amazon_flipkart_phone_number_fraud_detection(phone_number: str, topicId: str, userId: str) -> dict:
+    """
+    Checks if a phone number is associated with an Amazon and a flipkart account using Playwright used for fraud detection.
+    """
+    if not phone_number:
+        raise ValueError("Phone number is required")
+    redis = from_url(REDIS_URL)
+    notif_payload = {
+        "topicId": topicId,
+        "userId": userId,
+        "channel": "FRAUD_DETECTION",
+        "status": "Task Queued",
+    }
+    await redis.publish("notif_channel", json.dumps(notif_payload))
+
+    logging.info(f"[Amazon] Checking phone number: {phone_number}")
+    result = await run_check(phone_number)
+    result["phone_number"] = phone_number
+    result["checked_at"] = datetime.utcnow().isoformat() + "Z"
+    notif_payload = {
+        "topicId": topicId,
+        "userId": userId,
+        "channel": "FRAUD_DETECTION",
+        "status": "Task Completed",
+    }
+    await redis.publish("notif_channel", json.dumps(notif_payload))
+    redis.close()
+    return result
+
+if __name__ == "__main__":
+    mcp.run(
+        transport="sse",
+        host="0.0.0.0",
+        port=8002,
+        log_level="debug"
+    )
