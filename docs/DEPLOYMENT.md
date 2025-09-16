@@ -119,6 +119,27 @@ StandardError=append:/home/ubuntu/logs/mcp_server.log
 WantedBy=multi-user.target
 ```
 
+
+#### 5. Whatsapp Bot Service
+**File**: `/etc/systemd/system/sherlock_whatsapp_bot.service`
+```ini
+[Unit]
+Description=Sherlock Whatsapp Bot (uvicorn)
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/langchain_microservice
+ExecStart=/home/ubuntu/langchain_microservice/.venv/bin/uvicorn whatsapp_bot:app --host 0.0.0.0 --port 8005
+Restart=always
+RestartSec=5
+StandardOutput=append:/home/ubuntu/logs/whatsapp_bot.log
+StandardError=append:/home/ubuntu/logs/whatsapp_bot.log
+
+[Install]
+WantedBy=multi-user.target
+```
+
 ### Production Deployment Commands
 
 #### Service Management
@@ -129,18 +150,19 @@ sudo systemctl enable sherlock_telecaller.service
 sudo systemctl enable sherlock_server.service
 sudo systemctl enable sherlock_fraud.service
 sudo systemctl enable sherlock_mcp.service
+sudo systemctl enable sherlock_whatsapp_bot.service
 
 # Start all services
-sudo systemctl start sherlock_api.service sherlock_telecaller.service sherlock_server.service sherlock_fraud.service sherlock_mcp.service
+sudo systemctl start sherlock_api.service sherlock_telecaller.service sherlock_server.service sherlock_fraud.service sherlock_mcp.service sherlock_whatsapp_bot.service
 
 # Check service status
-sudo systemctl status sherlock_api.service sherlock_telecaller.service sherlock_server.service sherlock_fraud.service sherlock_mcp.service
+sudo systemctl status sherlock_api.service sherlock_telecaller.service sherlock_server.service sherlock_fraud.service sherlock_mcp.service sherlock_whatsapp_bot.service
 
 # Restart all services
-sudo systemctl restart sherlock_api.service sherlock_telecaller.service sherlock_server.service sherlock_fraud.service sherlock_mcp.service
+sudo systemctl restart sherlock_api.service sherlock_telecaller.service sherlock_server.service sherlock_fraud.service sherlock_mcp.service sherlock_whatsapp_bot.service
 
 # Stop all services
-sudo systemctl stop sherlock_api.service sherlock_telecaller.service sherlock_server.service sherlock_fraud.service sherlock_mcp.service
+sudo systemctl stop sherlock_api.service sherlock_telecaller.service sherlock_server.service sherlock_fraud.service sherlock_mcp.service sherlock_whatsapp_bot.service
 ```
 
 #### Log Management
@@ -151,6 +173,7 @@ tail -f /home/ubuntu/logs/mcp_telecaller_server.log
 tail -f /home/ubuntu/logs/server.log
 tail -f /home/ubuntu/logs/fraud_server.log
 tail -f /home/ubuntu/logs/mcp_server.log
+tail -f /home/ubuntu/logs/sherlock_whatsapp_bot.log
 
 # View service logs via systemctl
 sudo journalctl -u sherlock_api.service -f
@@ -158,6 +181,7 @@ sudo journalctl -u sherlock_telecaller.service -f
 sudo journalctl -u sherlock_server.service -f
 sudo journalctl -u sherlock_fraud.service -f
 sudo journalctl -u sherlock_mcp.service -f
+sudo journalctl -u sherlock_whatsapp_bot.service -f
 
 # Log rotation setup (add to crontab)
 # 0 2 * * * /usr/sbin/logrotate /etc/logrotate.d/sherlock
@@ -204,7 +228,7 @@ Create `/home/ubuntu/scripts/monitor_sherlock.sh`:
 echo "=== Sherlock Services Status ==="
 date
 
-services=("sherlock_api" "sherlock_telecaller" "sherlock_server" "sherlock_fraud" "sherlock_mcp")
+services=("sherlock_api" "sherlock_telecaller" "sherlock_server" "sherlock_fraud" "sherlock_mcp" "sherlock_whatsapp_bot")
 
 for service in "${services[@]}"; do
     status=$(systemctl is-active $service.service)
@@ -220,7 +244,7 @@ done
 
 echo ""
 echo "=== Port Status ==="
-ss -tlnp | grep -E ":800[0126]"
+ss -tlnp | grep -E ":800[01268]"
 
 echo ""
 echo "=== Recent Errors ==="
@@ -239,7 +263,7 @@ free -h
 
 Make it executable and add to crontab:
 ```bash
-chmod +x /home/ubuntu/scripts/monitor_sherlock.sh
+sudo chmod +x /home/ubuntu/scripts/monitor_sherlock.sh
 
 # Add to crontab for monitoring every 5 minutes
 # */5 * * * * /home/ubuntu/scripts/monitor_sherlock.sh >> /home/ubuntu/logs/monitor.log 2>&1
