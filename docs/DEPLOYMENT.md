@@ -244,7 +244,7 @@ done
 
 echo ""
 echo "=== Port Status ==="
-ss -tlnp | grep -E ":800[01268]"
+ss -tlnp | grep -E ":800[01256]"
 
 echo ""
 echo "=== Recent Errors ==="
