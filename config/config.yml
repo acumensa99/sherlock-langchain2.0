@@ -1,0 +1,57 @@
+# AWS Settings
+aws:
+  s3:
+    bucket_name: "video-anomaly-logs-us-east-1"
+    region: "us-east-1"
+  rekognition:
+    region: "us-east-1"
+  sns:
+    topic_arn: "arn:aws:sns:us-east-1:380312705225:rekognition-person-tracking-notifications"
+    role_arn: "arn:aws:iam::380312705225:role/video-anomaly-detection"
+
+# Webhook Service Settings
+webhook_service:
+  host: "0.0.0.0"
+  port: 8000
+  processed_videos_dir: "processed-videos"
+  max_retry_attempts: 3
+  retry_delay_seconds: 2
+  
+# Data Processing Settings
+data_processing:
+  confidence_threshold: 75.0
+  person_deduplication_threshold: 0.7  # IoU threshold for detecting same person
+  temporal_grouping_window: 5000      # Group similar detections within 5 seconds
+  priority_labels:
+    - Person
+    - People
+    - Face
+    - Head
+    - Walking
+    - Running
+    - Dancing
+    - Sitting
+    - Standing
+
+# Rekognition Settings
+rekognition:
+  # Minimum confidence threshold (0-100)
+  min_confidence: 70.0
+  
+  # Face recognition collection settings
+  collection_name: "people-collection"
+  recognize_people: true
+  face_match_threshold: 80.0
+  training_confidence_threshold: 85.0
+  max_faces_returned: 10
+  
+  # Optional: Target labels to filter for
+  # If provided, only these labels will be returned
+  target_labels:
+    - Person
+    - Male
+    - Female
+    - Adult
+    - Child
+    - Clothing
+    - Face

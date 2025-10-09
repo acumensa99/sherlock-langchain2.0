@@ -1,7 +1,9 @@
 import asyncio
 import json
 import numpy as np
+from datetime import datetime
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from langchain.agents import initialize_agent, AgentType
 from langchain_aws import BedrockLLM, ChatBedrock
 from langchain_mcp_adapters.client import MultiServerMCPClient
@@ -20,12 +22,36 @@ import logging
 from fastapi.responses import StreamingResponse
 
 from token_tracking_class import TokenTrackingCallback, get_pricing, BUFFER_TOKENS
+# Import video analysis router
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), 'rekogniton-webhook-service'))
+
+try:
+    from router import router as video_analysis_router
+    VIDEO_ANALYSIS_AVAILABLE = True
+except ImportError as e:
+    logging.warning(f"Video analysis router not available: {e}")
+    VIDEO_ANALYSIS_AVAILABLE = False
 
 # Load .env variables
 load_dotenv()
 
 # FastAPI app
 app = FastAPI()
+
+# Include video analysis router if available
+if VIDEO_ANALYSIS_AVAILABLE:
+    app.include_router(video_analysis_router)
+    logging.info("Video analysis router included successfully")
+
+# Add CORS middleware for video analysis frontend integration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],  # Vite dev server
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Config
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
@@ -180,6 +206,44 @@ def get_sample_data(engine, row_limit=3):
 
 
 logging.basicConfig(level=logging.INFO)
+
+
+@app.get("/")
+async def root():
+    """Root endpoint showing available services"""
+    services = {
+        "status": "running",
+        "service": "sherlock-langchain-api",
+        "available_endpoints": {
+            "data_analytics": ["/query", "/general", "/generate_title", "/autocomplete"],
+            "models": ["/enabled_models"],
+        }
+    }
+    
+    if VIDEO_ANALYSIS_AVAILABLE:
+        services["available_endpoints"]["video_analysis"] = [
+            "/video-analysis/upload",
+            "/video-analysis/status/{job_id}",
+            "/video-analysis/chat/{job_id}",
+            "/video-analysis/summary/{job_id}",
+            "/video-analysis/files/filtered",
+            "/video-analysis/chat-file"
+        ]
+    
+    return services
+
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {
+        "status": "healthy",
+        "timestamp": datetime.utcnow().isoformat(),
+        "services": {
+            "data_analytics": "active",
+            "video_analysis": "active" if VIDEO_ANALYSIS_AVAILABLE else "not_available"
+        }
+    }
 
 
 @app.get("/enabled_models")
