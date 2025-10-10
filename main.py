@@ -249,7 +249,7 @@ async def health_check():
 @app.get("/enabled_models")
 async def get_enabled_models():
     try:
-        return {"models": models_dict.keys()}
+        return {"models": list(models_dict.keys())}
 
     except Exception as e:
         return {"error": str(e)}
