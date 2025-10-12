@@ -11,7 +11,7 @@ from playwright_stealth import stealth_async
 
 mcp = FastMCP("FraudDetection")
 logging.basicConfig(level=logging.DEBUG)
-REDIS_URL = "redis://default:JMPog04EGI2MVcbO3HDPC9clDNyztfBX@redis-19800.crce179.ap-south-1-1.ec2.redns.redis-cloud.com:19800"
+REDIS_URL = "redis://default:8UJi1DyhMTXKCC0cA8cKH9Bc3tzuwg7w@redis-17846.crce217.ap-south-1-1.ec2.redns.redis-cloud.com:17846"
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64)...",
     "Mozilla/5.0 (X11; Linux x86_64)...",
