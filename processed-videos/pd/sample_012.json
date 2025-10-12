@@ -1,0 +1,26 @@
+{
+  "metadata": {
+    "video_info": {
+      "original_video_name": "sample_012"
+    },
+    "total_filtered_labels": 10,
+    "video_duration_ms": 26000
+  },
+  "summary": {
+    "total_unique_people": 9,
+    "scene_type": "Crime Scene"
+  },
+  "labels": [
+    "person",
+    "motorcycle",
+    "street",
+    "jewelry",
+    "motion",
+    "daylight",
+    "road",
+    "urban",
+    "theft",
+    "vehicle"
+  ],
+  "story": "Two members riding a motorcycle approach a woman walking on a busy street during daylight hours. In a swift motion, one of the riders snatches a gold chain from the woman's neck while the motorcycle is in motion. The incident occurs in an urban setting with clear visibility. The perpetrators quickly flee the scene on their vehicle, leaving the victim in distress. The theft was executed with coordination between the rider and the passenger, suggesting a planned criminal activity."
+}

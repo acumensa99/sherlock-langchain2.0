@@ -1,0 +1,28 @@
+{
+  "metadata": {
+    "video_info": {
+      "original_video_name": "demo_theft"
+    },
+    "total_filtered_labels": 12,
+    "video_duration_ms": 32000
+  },
+  "summary": {
+    "total_unique_people": 5,
+    "scene_type": "Retail Environment"
+  },
+  "labels": [
+    "person",
+    "shop",
+    "retail",
+    "shelf",
+    "product",
+    "backpack",
+    "clothing",
+    "indoor",
+    "surveillance",
+    "security",
+    "theft",
+    "customer"
+  ],
+  "story": "A customer enters a retail store and browses through various aisles. The person is seen picking up several items from different shelves and discreetly placing them into a backpack without proceeding to the checkout counter. Store surveillance cameras capture the individual's movements across multiple sections. The person then exits the store through the main entrance without paying for the concealed items. The incident occurred during regular business hours with minimal staff presence in that particular section of the store."
+}

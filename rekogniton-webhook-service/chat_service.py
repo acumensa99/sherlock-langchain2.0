@@ -44,31 +44,40 @@ class VideoChatService:
             analyzer = BedrockAnalyzer()
             analyzer.rekognition_log_file = Path(filtered_file_path)
             
-            # Load and prepare the analysis data
-            logs = analyzer.load_rekognition_logs()
-            
-            # For filtered JSON files, even if timeline is empty, we can still analyze
-            # Load the raw filtered data to create context
+            # Load the filtered JSON data
             with open(filtered_file_path, 'r') as f:
                 filtered_data = json.load(f)
             
-            # Create context from filtered data even if no timeline entries
-            if not logs:
-                self.logger.info(f"No timeline entries found, creating context from filtered data structure")
-                context = self._create_context_from_filtered_data(filtered_data)
+            # Check if this is a predefined video (has 'story' field)
+            is_predefined = 'story' in filtered_data
+            
+            if is_predefined:
+                # For predefined videos, use the story as context
+                self.logger.info(f"Starting chat session for predefined video: {job_id}")
+                context = self._create_context_from_story(filtered_data)
+                logs = []  # No timeline logs for predefined videos
             else:
-                # Prepare context for AI analysis
-                context = analyzer.prepare_context(logs)
+                # For normal videos, load and prepare the analysis data
+                logs = analyzer.load_rekognition_logs()
+                
+                # For filtered JSON files, even if timeline is empty, we can still analyze
+                if not logs:
+                    self.logger.info(f"No timeline entries found, creating context from filtered data structure")
+                    context = self._create_context_from_filtered_data(filtered_data)
+                else:
+                    # Prepare context for AI analysis
+                    context = analyzer.prepare_context(logs)
             
             # Store session data
             self.chat_sessions[job_id] = {
                 "analyzer": analyzer,
                 "context": context,
                 "logs": logs,
-                "chat_history": []
+                "chat_history": [],
+                "is_predefined": is_predefined
             }
             
-            self.logger.info(f"Started chat session for job {job_id}")
+            self.logger.info(f"Started chat session for job {job_id} (predefined: {is_predefined})")
             return True
             
         except Exception as e:
@@ -253,6 +262,43 @@ class VideoChatService:
         if action_analysis:
             context_parts.append(f"\n=== ACTION ANALYSIS ===")
             context_parts.append(f"Total actions detected: {action_analysis.get('total_actions_detected', 0)}")
+        
+        return "\n".join(context_parts)
+    
+    def _create_context_from_story(self, filtered_data: Dict[str, Any]) -> str:
+        """
+        Create analysis context from predefined video story.
+        
+        Args:
+            filtered_data: The filtered analysis data containing story
+            
+        Returns:
+            Formatted context string for AI analysis
+        """
+        context_parts = []
+        
+        # Add metadata information
+        metadata = filtered_data.get("metadata", {})
+        video_info = metadata.get("video_info", {})
+        summary = filtered_data.get("summary", {})
+        
+        context_parts.append("=== VIDEO ANALYSIS SUMMARY ===")
+        context_parts.append(f"Video: {video_info.get('original_video_name', 'Unknown')}")
+        context_parts.append(f"Duration: {metadata.get('video_duration_ms', 0) / 1000:.1f} seconds")
+        context_parts.append(f"People detected: {summary.get('total_unique_people', 0)} unique")
+        context_parts.append(f"Scene type: {summary.get('scene_type', 'Unknown')}")
+        context_parts.append(f"Total labels detected: {metadata.get('total_filtered_labels', 0)}")
+        
+        # Add labels
+        labels = filtered_data.get("labels", [])
+        if labels:
+            context_parts.append(f"Detected labels: {', '.join(labels)}")
+        
+        # Add the story as the main context
+        story = filtered_data.get("story", "")
+        if story:
+            context_parts.append(f"\n=== INCIDENT DESCRIPTION ===")
+            context_parts.append(story)
         
         return "\n".join(context_parts)
     

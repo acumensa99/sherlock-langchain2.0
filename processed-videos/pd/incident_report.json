@@ -1,0 +1,31 @@
+{
+  "metadata": {
+    "video_info": {
+      "original_video_name": "incident_report"
+    },
+    "total_filtered_labels": 15,
+    "video_duration_ms": 45000
+  },
+  "summary": {
+    "total_unique_people": 12,
+    "scene_type": "Public Space"
+  },
+  "labels": [
+    "person",
+    "crowd",
+    "public",
+    "outdoor",
+    "street",
+    "vehicle",
+    "car",
+    "traffic",
+    "pedestrian",
+    "road",
+    "urban",
+    "accident",
+    "emergency",
+    "daylight",
+    "city"
+  ],
+  "story": "A traffic incident unfolds at a busy urban intersection during daylight hours. A vehicle traveling at moderate speed fails to stop at a red light signal, resulting in a collision with a pedestrian crossing the street. Multiple witnesses are present at the scene, including approximately 12 individuals who immediately respond to help. Emergency services are called as bystanders assist the injured pedestrian. The video captures the moments before, during, and after the incident, showing the vehicle's trajectory and the pedestrian's crossing pattern. Traffic in the area comes to a halt as people gather around the accident site. The footage provides clear evidence of the traffic violation and the sequence of events leading to the collision."
+}

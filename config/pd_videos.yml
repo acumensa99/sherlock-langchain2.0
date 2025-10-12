@@ -1,0 +1,6 @@
+# Predefined videos configuration
+# List of video filenames that should use predefined analysis data
+predefined_videos:
+  - sample_012.mp4
+  - demo_theft.mp4
+  - incident_report.mp4

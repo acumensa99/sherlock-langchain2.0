@@ -9,7 +9,7 @@ This guide covers deployment strategies for the Sherlock LangChain platform acro
 The production system runs on Ubuntu with systemd services managing all components:
 
 ```
-/home/ubuntu/langchain_microservice/
+/home/ubuntu/sherlock-langchain/
 ├── main.py                        # Main API service
 ├── mcp_telecaller_server.py       # Telecaller service  
 ├── .venv/                         # Python virtual environment
@@ -32,8 +32,8 @@ After=network.target
 
 [Service]
 User=ubuntu
-WorkingDirectory=/home/ubuntu/langchain_microservice
-ExecStart=/home/ubuntu/langchain_microservice/.venv/bin/uvicorn main:app --host 0.0.0.0
+WorkingDirectory=/home/ubuntu/sherlock-langchain
+ExecStart=/home/ubuntu/sherlock-langchain/.venv/bin/uvicorn main:app --host 0.0.0.0
 Restart=always
 RestartSec=5
 StandardOutput=append:/home/ubuntu/logs/main.log
@@ -52,7 +52,7 @@ After=network.target
 
 [Service]
 User=ubuntu
-ExecStart=/home/ubuntu/langchain_microservice/.venv/bin/python -u /home/ubuntu/langchain_microservice/mcp_telecaller_server.py
+ExecStart=/home/ubuntu/sherlock-langchain/.venv/bin/python -u /home/ubuntu/sherlock-langchain/mcp_telecaller_server.py
 Restart=always
 RestartSec=5
 StandardOutput=append:/home/ubuntu/logs/mcp_telecaller_server.log
@@ -71,7 +71,7 @@ After=network.target
 
 [Service]
 User=ubuntu
-ExecStart=/home/ubuntu/langchain_microservice/buyscout/.venv/bin/python -u /home/ubuntu/langchain_microservice/buyscout/server.py
+ExecStart=/home/ubuntu/sherlock-langchain/buyscout/.venv/bin/python -u /home/ubuntu/sherlock-langchain/buyscout/server.py
 Restart=always
 RestartSec=5
 StandardOutput=append:/home/ubuntu/logs/server.log
@@ -90,7 +90,7 @@ After=network.target
 
 [Service]
 User=ubuntu
-ExecStart=/home/ubuntu/langchain_microservice/buyscout/.venv/bin/python -u /home/ubuntu/langchain_microservice/buyscout/mcp_fraud_server.py
+ExecStart=/home/ubuntu/sherlock-langchain/buyscout/.venv/bin/python -u /home/ubuntu/sherlock-langchain/buyscout/mcp_fraud_server.py
 Restart=always
 RestartSec=5
 StandardOutput=append:/home/ubuntu/logs/fraud_server.log
@@ -109,7 +109,7 @@ After=network.target
 
 [Service]
 User=ubuntu
-ExecStart=/home/ubuntu/langchain_microservice/buyscout/.venv/bin/python -u /home/ubuntu/langchain_microservice/buyscout/mcp_server.py
+ExecStart=/home/ubuntu/sherlock-langchain/buyscout/.venv/bin/python -u /home/ubuntu/sherlock-langchain/buyscout/mcp_server.py
 Restart=always
 RestartSec=5
 StandardOutput=append:/home/ubuntu/logs/mcp_server.log
@@ -129,8 +129,8 @@ After=network.target
 
 [Service]
 User=ubuntu
-WorkingDirectory=/home/ubuntu/langchain_microservice
-ExecStart=/home/ubuntu/langchain_microservice/.venv/bin/uvicorn whatsapp_bot:app --host 0.0.0.0 --port 8005
+WorkingDirectory=/home/ubuntu/sherlock-langchain
+ExecStart=/home/ubuntu/sherlock-langchain/.venv/bin/uvicorn whatsapp_bot:app --host 0.0.0.0 --port 8005
 Restart=always
 RestartSec=5
 StandardOutput=append:/home/ubuntu/logs/whatsapp_bot.log
@@ -193,18 +193,18 @@ sudo journalctl -u sherlock_whatsapp_bot.service -f
 mkdir -p /home/ubuntu/logs
 
 # Set up virtual environments
-cd /home/ubuntu/langchain_microservice
+cd /home/ubuntu/sherlock-langchain
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
-cd /home/ubuntu/langchain_microservice/buyscout
+cd /home/ubuntu/sherlock-langchain/buyscout
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
 # Install Playwright browsers for fraud detection
-source /home/ubuntu/langchain_microservice/buyscout/.venv/bin/activate
+source /home/ubuntu/sherlock-langchain/buyscout/.venv/bin/activate
 playwright install chromium
 playwright install-deps
 ```
@@ -278,7 +278,7 @@ Create `/home/ubuntu/scripts/deploy_sherlock.sh`:
 echo "🚀 Deploying Sherlock Update..."
 
 # Navigate to project directory
-cd /home/ubuntu/langchain_microservice
+cd /home/ubuntu/sherlock-langchain
 
 # Pull latest changes
 git pull origin main
@@ -328,7 +328,7 @@ htop
 sudo iotop
 
 # Check disk space
-du -sh /home/ubuntu/langchain_microservice/
+du -sh /home/ubuntu/sherlock-langchain/
 du -sh /home/ubuntu/logs/
 
 # Test service endpoints

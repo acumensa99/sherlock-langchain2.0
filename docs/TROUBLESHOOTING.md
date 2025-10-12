@@ -34,11 +34,11 @@ sudo lsof -t -i:8002 | xargs sudo kill -9
 sudo lsof -t -i:8006 | xargs sudo kill -9
 
 # Fix permissions
-sudo chown -R ubuntu:ubuntu /home/ubuntu/langchain_microservice
+sudo chown -R ubuntu:ubuntu /home/ubuntu/sherlock-langchain
 sudo chown -R ubuntu:ubuntu /home/ubuntu/logs
 
 # Recreate virtual environment
-cd /home/ubuntu/langchain_microservice
+cd /home/ubuntu/sherlock-langchain
 rm -rf .venv
 python3 -m venv .venv
 source .venv/bin/activate
@@ -48,13 +48,13 @@ pip install -r requirements.txt
 #### **Environment Variables Missing**
 ```bash
 # Check if .env file exists
-ls -la /home/ubuntu/langchain_microservice/.env
-ls -la /home/ubuntu/langchain_microservice/buyscout/.env
+ls -la /home/ubuntu/sherlock-langchain/.env
+ls -la /home/ubuntu/sherlock-langchain/buyscout/.env
 
 # Create missing environment files
-cp /home/ubuntu/langchain_microservice/.env.example /home/ubuntu/langchain_microservice/.env
+cp /home/ubuntu/sherlock-langchain/.env.example /home/ubuntu/sherlock-langchain/.env
 # Edit with actual values
-nano /home/ubuntu/langchain_microservice/.env
+nano /home/ubuntu/sherlock-langchain/.env
 ```
 
 ### 2. Database Connection Issues
@@ -151,7 +151,7 @@ ldd /home/ubuntu/.cache/ms-playwright/chromium-*/chrome-linux/chrome
 **Solutions:**
 ```bash
 # Reinstall Playwright browsers
-cd /home/ubuntu/langchain_microservice/buyscout
+cd /home/ubuntu/sherlock-langchain/buyscout
 source .venv/bin/activate
 playwright uninstall
 playwright install chromium
@@ -203,7 +203,7 @@ grep -i "unauthorized\|forbidden" /home/ubuntu/logs/main.log
 **Solutions:**
 ```bash
 # Verify API keys in environment
-source /home/ubuntu/langchain_microservice/.venv/bin/activate
+source /home/ubuntu/sherlock-langchain/.venv/bin/activate
 python3 -c "import os; print('GROQ_API_KEY:', 'SET' if os.getenv('GROQ_API_KEY') else 'NOT SET')"
 
 # Test API connectivity
@@ -366,8 +366,8 @@ mkdir -p $BACKUP_DIR
 
 # Backup configuration files
 tar -czf "$BACKUP_DIR/config_$DATE.tar.gz" \
-    /home/ubuntu/langchain_microservice/.env \
-    /home/ubuntu/langchain_microservice/buyscout/.env \
+    /home/ubuntu/sherlock-langchain/.env \
+    /home/ubuntu/sherlock-langchain/buyscout/.env \
     /etc/systemd/system/sherlock_*.service
 
 # Backup database (if using local PostgreSQL)
@@ -401,7 +401,7 @@ sudo systemctl stop sherlock_api.service sherlock_telecaller.service sherlock_se
 sleep 10
 
 # Pull latest code
-cd /home/ubuntu/langchain_microservice
+cd /home/ubuntu/sherlock-langchain
 git stash  # Save local changes
 git pull origin main
 
@@ -589,7 +589,7 @@ sudo -u postgres psql sherlock_db < database_YYYYMMDD_HHMMSS.sql
 ### Contact Information
 - **System Administrator**: [Your contact info]
 - **Emergency Contact**: [Emergency contact]
-- **Documentation**: This guide and `/home/ubuntu/langchain_microservice/README.md`
+- **Documentation**: This guide and `/home/ubuntu/sherlock-langchain/README.md`
 
 ---
 

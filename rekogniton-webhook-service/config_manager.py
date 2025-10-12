@@ -67,3 +67,19 @@ class ConfigManager:
             os.path.dirname(os.path.dirname(__file__)),
             dir_name
         )
+    
+    def get_predefined_videos(self) -> list:
+        """Get list of predefined videos from pd_videos.yml"""
+        try:
+            pd_config_path = os.path.join(
+                os.path.dirname(os.path.dirname(__file__)),
+                "config",
+                "pd_videos.yml"
+            )
+            with open(pd_config_path, 'r') as file:
+                pd_config = yaml.safe_load(file)
+                return pd_config.get("predefined_videos", [])
+        except FileNotFoundError:
+            return []
+        except yaml.YAMLError:
+            return []

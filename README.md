@@ -182,14 +182,14 @@ For local development, you can also run services individually:
 
 1. **Start Main API**:
 ```bash
-cd /home/ubuntu/langchain_microservice
+cd /home/ubuntu/sherlock-langchain
 source .venv/bin/activate
 uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
 2. **Start BuyScout Services**:
 ```bash
-cd /home/ubuntu/langchain_microservice/buyscout
+cd /home/ubuntu/sherlock-langchain/buyscout
 source .venv/bin/activate
 
 # Start scraper server
@@ -204,7 +204,7 @@ python server.py
 
 3. **Start Telecaller Server**:
 ```bash
-cd /home/ubuntu/langchain_microservice
+cd /home/ubuntu/sherlock-langchain
 source .venv/bin/activate
 python mcp_telecaller_server.py
 ```

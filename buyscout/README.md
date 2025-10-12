@@ -295,13 +295,13 @@ After=network.target
 
 [Service]
 User=ubuntu
-WorkingDirectory=/home/ubuntu/langchain_microservice/buyscout
-ExecStart=/home/ubuntu/langchain_microservice/buyscout/.venv/bin/python -u mcp_server.py
+WorkingDirectory=/home/ubuntu/sherlock-langchain/buyscout
+ExecStart=/home/ubuntu/sherlock-langchain/buyscout/.venv/bin/python -u mcp_server.py
 Restart=always
 RestartSec=5
 StandardOutput=append:/home/ubuntu/logs/mcp_server.log
 StandardError=append:/home/ubuntu/logs/mcp_server.log
-Environment=PYTHONPATH=/home/ubuntu/langchain_microservice
+Environment=PYTHONPATH=/home/ubuntu/sherlock-langchain
 
 [Install]
 WantedBy=multi-user.target
