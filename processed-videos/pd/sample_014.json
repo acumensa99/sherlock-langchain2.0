@@ -1,0 +1,27 @@
+{
+  "metadata": {
+    "video_info": {
+      "original_video_name": "sample_014"
+    },
+    "total_filtered_labels": 11,
+    "video_duration_ms": 21000
+  },
+  "summary": {
+    "total_unique_people": 3,
+    "scene_type": "Crime Scene"
+  },
+  "labels": [
+    "person",
+    "atm machine",
+    "door",
+    "monitor",
+    "mouse",
+    "mop",
+    "cleaning supplies",
+    "indoor",
+    "motion",
+    "theft",
+    "crime"
+  ],
+  "story": "The footage, viewed on an Asus monitor with a red mouse nearby, shows an indoor location with mops and cleaning supplies present. The scene captures a coordinated theft involving three individuals. Initially, one person is visible waiting outside a door. Two other individuals appear from inside, dragging a heavy ATM machine across the floor. In the process, they push aside cleaning equipment that is in their path. Upon reaching the doorway, they lift the ATM and carry it outside to their accomplice. The entire incident is captured within a 21-second timeframe, indicating a planned and swift criminal operation."
+}

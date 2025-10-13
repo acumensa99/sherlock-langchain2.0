@@ -3,24 +3,28 @@
     "video_info": {
       "original_video_name": "sample_012"
     },
-    "total_filtered_labels": 10,
-    "video_duration_ms": 26000
+    "total_filtered_labels": 14,
+    "video_duration_ms": 13000
   },
   "summary": {
-    "total_unique_people": 9,
+    "total_unique_people": 3,
     "scene_type": "Crime Scene"
   },
   "labels": [
     "person",
-    "motorcycle",
-    "street",
-    "jewelry",
-    "motion",
-    "daylight",
-    "road",
-    "urban",
+    "mask",
+    "crowbar",
+    "shop",
+    "mug",
+    "screen",
+    "package box",
+    "clipboard",
+    "cctv camera",
+    "news logo",
+    "text overlay",
+    "car",
     "theft",
-    "vehicle"
+    "crime"
   ],
-  "story": "Two members riding a motorcycle approach a woman walking on a busy street during daylight hours. In a swift motion, one of the riders snatches a gold chain from the woman's neck while the motorcycle is in motion. The incident occurs in an urban setting with clear visibility. The perpetrators quickly flee the scene on their vehicle, leaving the victim in distress. The theft was executed with coordination between the rider and the passenger, suggesting a planned criminal activity."
+  "story": "This footage is presented as a news report from 'itv News', indicated by a logo in the top right and a text overlay reading 'Crawling criminals caught on camera'. The initial CCTV segment shows the indoor view of a shop containing mugs, a screen, and a clipboard. Two masked individuals are seen crawling on the floor; the person in the rear is carrying a crowbar. They proceed to drag a package box while crawling backwards. The scene then transitions to different footage where one of the culprits strikes a CCTV camera directly with the crowbar, while their photos are displayed on the news broadcast. The final scene shows one of the robbers being forcefully pulled out of a red car by an unidentified person."
 }

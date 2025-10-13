@@ -186,7 +186,7 @@ class VideoProcessingService:
             self.logger.info(f"Starting predefined video processing for job {job_id}")
             
             # Simulate processing delay (1 minute)
-            await asyncio.sleep(60)
+            await asyncio.sleep(1)
             
             # Get base filename without extension
             base_filename = os.path.splitext(original_filename)[0]
