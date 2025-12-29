@@ -18,7 +18,8 @@ def trigger_call(phone_number: str) -> str:
 
 
     client = ElevenLabs(
-        api_key="sk_2c8e69efd0218df4e00aa69dd09acceb89cad2ed8240300b",
+#        api_key="sk_2c8e69efd0218df4e00aa69dd09acceb89cad2ed8240300b",
+	api_key="cdb0a973a9eb6a0947cbe6dae2d4255b9b029c0c197b72ebe57aed1622454648"
     )
     client.conversational_ai.twilio.outbound_call(
         agent_id="agent_4101k0vm612bfmvsn9zfw4pfmn2k",

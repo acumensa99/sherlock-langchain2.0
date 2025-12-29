@@ -1,0 +1,207 @@
+import os
+import re
+import io
+import json
+import logging
+import pandas as pd
+from typing import List, Dict, Any
+from fastapi import APIRouter, HTTPException
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
+from sqlalchemy import create_engine, text, inspect
+from langchain_aws import ChatBedrock
+from langchain_core.prompts import PromptTemplate
+from fastapi import FastAPI, APIRouter, HTTPException
+
+# Setup Logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("sephora_agent")
+
+# Initialize Router
+router = APIRouter(prefix="/sephora", tags=["Sephora Inventory"])
+
+
+app = FastAPI()
+app.include_router(router)
+# ================= CONFIGURATION =================
+
+# Database Setup (NeonDB)
+# Using the specific URL from your request
+SEPHORA_DB_URL = os.getenv("SEPHORA_DATABASE_URL", "postgresql://neondb_owner:npg_2B6QXDatPwlp@ep-sparkling-lab-a15aax1d-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require")
+engine = create_engine(SEPHORA_DB_URL)
+
+
+
+
+# Bedrock Model Setup (Claude 3.5 Sonnet is best for SQL generation)
+# Ensure AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are in your .env
+llm_sql = ChatBedrock(
+    model_id="us.anthropic.claude-3-5-sonnet-20241022-v2:0", 
+    region_name="us-east-1",
+    model_kwargs={"temperature": 0} # Zero temperature for precise SQL
+)
+
+llm_chat = ChatBedrock(
+    model_id="us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+    region_name="us-east-1", 
+    model_kwargs={"temperature": 0.5}
+)
+
+# ================= PROMPTS =================
+
+SCHEMA_CONTEXT = """
+Database Schema (Sephora Inventory):
+1. store_inventory (Main table)
+   - id (int), sku_id (varchar), zipcode (int), store (varchar), 
+   - address (varchar), availability (varchar), category (varchar), brand_id (varchar)
+   - Note: sku_id links to products.product_id
+
+2. products
+   - product_id (varchar), brand (varchar), name (text), price (numeric)
+   - source_url (text), image (text)
+
+3. brands
+   - brand_name (varchar), url (text)
+
+4. zipcodes
+   - zipcode (int), city (varchar), state (varchar)
+"""
+
+SQL_TEMPLATE = """
+You are an expert PostgreSQL developer for Sephora. 
+Convert the following natural language request into a valid SQL query.
+
+{schema}
+
+User Request: "{query}"
+
+CRITICAL RULES:
+1. Return ONLY the raw SQL query. No markdown (```sql), no explanations.
+2. ALWAYS JOIN products on `store_inventory.sku_id = products.product_id`.
+3. Use ILIKE for text matching (case-insensitive).
+4. Zipcodes are integers.
+5. `availability` contains text like 'In Stock' or 'Out of Stock'.
+
+SQL Query:
+"""
+
+ANSWER_TEMPLATE = """
+You are a helpful Sephora assistant.
+User asked: "{query}"
+The database returned: 
+{data}
+
+Provide a concise, friendly summary of these results (max 3 sentences). 
+Mention how many stores/products were found and the general availability.
+Use emojis like 💄, 🏪, ✅ where appropriate.
+"""
+
+# ================= PYDANTIC MODELS =================
+@app.get("/")
+def health_check():
+    return {"status": "Sephora Intelligence Agent Running"}
+class SephoraRequest(BaseModel):
+    query: str
+
+class ExportRequest(BaseModel):
+    sql: str
+    query: str
+
+# ================= HELPER FUNCTIONS =================
+
+def generate_sql_with_bedrock(user_query: str) -> str:
+    prompt = PromptTemplate.from_template(SQL_TEMPLATE)
+    chain = prompt | llm_sql
+    
+    response = chain.invoke({
+        "schema": SCHEMA_CONTEXT,
+        "query": user_query
+    })
+    
+    # Cleanup Bedrock output
+    sql = response.content.strip()
+    sql = re.sub(r'```sql\n?', '', sql)
+    sql = re.sub(r'```', '', sql)
+    return sql.strip()
+
+def generate_summary_with_bedrock(user_query: str, results: List[Dict]) -> str:
+    if not results:
+        return "I couldn't find any results matching your request."
+        
+    # Limit data context to save tokens
+    data_str = json.dumps(results[:15], default=str)
+    
+    prompt = PromptTemplate.from_template(ANSWER_TEMPLATE)
+    chain = prompt | llm_chat
+    
+    response = chain.invoke({
+        "query": user_query,
+        "data": data_str
+    })
+    return response.content.strip()
+
+# ================= API ENDPOINTS =================
+
+@router.post("/nl-query")
+async def sephora_query(request: SephoraRequest):
+    """Generates SQL -> Executes -> Returns Answer"""
+    try:
+        # 1. Generate SQL
+        sql_query = generate_sql_with_bedrock(request.query)
+        logger.info(f"Generated SQL: {sql_query}")
+
+        # 2. Execute SQL
+        with engine.connect() as conn:
+            df = pd.read_sql(text(sql_query), conn)
+        
+        results = df.to_dict(orient="records")
+        
+        # 3. Generate Answer
+        answer = generate_summary_with_bedrock(request.query, results)
+
+        return {
+            "success": True,
+            "query": request.query,
+            "answer": answer,
+            "sql": sql_query,
+            "results": results[:100], # Frontend limit
+            "rowCount": len(results),
+            "hasExport": not df.empty
+        }
+
+    except Exception as e:
+        logger.error(f"Sephora Agent Error: {e}")
+        return {"success": False, "error": str(e)}
+
+@router.post("/export-excel")
+async def export_excel(request: ExportRequest):
+    """Exports SQL results to Excel"""
+    try:
+        with engine.connect() as conn:
+            df = pd.read_sql(text(request.sql), conn)
+        
+        if df.empty:
+            raise HTTPException(status_code=400, detail="No data found")
+
+        # Create Excel in Memory
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='Sephora Data')
+        
+        output.seek(0)
+        
+        headers = {'Content-Disposition': 'attachment; filename="sephora_export.xlsx"'}
+        return StreamingResponse(
+            output, 
+            headers=headers, 
+            media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+
+    except Exception as e:
+        logger.error(f"Export Error: {e}")
+        raise HTTPException(status_code=500, detail="Export failed")
+    
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8007)

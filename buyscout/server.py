@@ -6,7 +6,8 @@ from redis.asyncio import Redis
 from asin_scrapper.single_asin_scrapper import process_asins_dynamic
 
 # Redis connection setup
-REDIS_URL = os.getenv("REDIS_URL", "redis://default:8UJi1DyhMTXKCC0cA8cKH9Bc3tzuwg7w@redis-17846.crce217.ap-south-1-1.ec2.redns.redis-cloud.com:17846")
+#REDIS_URL = os.getenv("REDIS_URL", "redis://default:8UJi1DyhMTXKCC0cA8cKH9Bc3tzuwg7w@redis-17846.crce217.ap-south-1-1.ec2.redns.redis-cloud.com:17846")
+REDIS_URL="redis://default:9ffZTAyl1KFYc9iQKUz215ieSqbHiSPU@redis-10281.crce179.ap-south-1-1.ec2.cloud.redislabs.com:10281"
 CHANNEL_NAME = "process_asins_channel"
 
 async def redis_listener():

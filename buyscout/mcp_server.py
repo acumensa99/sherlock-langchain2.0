@@ -4,7 +4,8 @@ import logging
 from datetime import datetime
 from redis.asyncio import from_url  # using redis-py asyncio
 import httpx
-REDIS_URL = "redis://default:8UJi1DyhMTXKCC0cA8cKH9Bc3tzuwg7w@redis-17846.crce217.ap-south-1-1.ec2.redns.redis-cloud.com:17846"
+#REDIS_URL = "redis://default:8UJi1DyhMTXKCC0cA8cKH9Bc3tzuwg7w@redis-17846.crce217.ap-south-1-1.ec2.redns.redis-cloud.com:17846"
+REDIS_URL="redis://default:9ffZTAyl1KFYc9iQKUz215ieSqbHiSPU@redis-10281.crce179.ap-south-1-1.ec2.cloud.redislabs.com:10281"
 CHANNEL = "process_asins_channel"
 COMPLETION_CHANNEL = "process_asins_completion_channel"
 logging.basicConfig(level=logging.DEBUG)

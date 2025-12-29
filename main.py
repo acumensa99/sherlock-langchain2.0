@@ -103,6 +103,10 @@ client = MultiServerMCPClient({
     "TelecallerServer": {
         "url": "http://localhost:8006/sse",
         "transport": "sse"
+    },
+    "SephoraService": {
+        "url": "http://localhost:8007/sse",
+        "transport": "sse"
     }
 })
 
@@ -276,6 +280,7 @@ async def query(request: QueryRequest):
             response = llama3_70b.invoke(f"""
     You are a helpful assistant. Classify the following question into one of the following categories:
     1. BUYBOX
+    2. SEPHORA
     3. FRAUDDETECTION
     Question: "{request.question}"
 
@@ -318,12 +323,16 @@ async def query(request: QueryRequest):
                 request.miniAppType = "SCRAPING"
             elif "FRAUD_DETECTION" in request.miniAppType:
                 request.miniAppType = "FRAUD_DETECTION"
+            elif "SEPHORA" in request.miniAppType:
+                request.miniAppType = "SEPHORA"
             elif "BUYBOX" in response_text:
                 request.miniAppType = "BBCHAMPS"
             elif "SCRAPING" in response_text:
                 request.miniAppType = "SCRAPING"
             elif "FRAUDDETECTION" in response_text:
                 request.miniAppType = "FRAUD_DETECTION"
+            elif "SEPHORA" in response_text:
+                request.miniAppType = "SEPHORA"
             else:
                 raise HTTPException(status_code=400, detail="Invalid category number from LLM")
 
@@ -445,6 +454,18 @@ Please correct the SQL or Python code accordingly and return the updated version
                         tools = await load_mcp_tools(session)
 
                         # Create and run the agent (inside session context!)
+                        mcp_agent = initialize_agent(
+                            tools,
+                            claude_3_7_sonnet_mcp,
+                            agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
+                            verbose=True
+                        )
+                        response = await mcp_agent.ainvoke(full_prompt)
+                elif request.miniAppType == "SEPHORA":
+                    print("Running Sephora Intelligence Agent...")
+                    async with client.session("SephoraService") as session:
+                        tools = await load_mcp_tools(session)
+
                         mcp_agent = initialize_agent(
                             tools,
                             claude_3_7_sonnet_mcp,

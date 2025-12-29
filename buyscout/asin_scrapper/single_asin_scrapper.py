@@ -21,7 +21,6 @@ async def open_product_page(context, data_asin, tab_index, pincode="751024", lat
     try:
         # await context.set_cache_enabled(True)
         page = await context.new_page()
-
         # async def handle_route(route, request):
         #     # Block unnecessary resources like stylesheets, fonts, and media
         #     if request.resource_type in ["stylesheet", "font", "media"]:
@@ -40,10 +39,18 @@ async def open_product_page(context, data_asin, tab_index, pincode="751024", lat
         #     else:
         #         await route.continue_()
 
-        # await page.route("**/*", handle_route)
-        page.set_default_timeout(30000)
+        # await page.route("**/*", handle_route) 
+        page.set_default_timeout(90000)
         product_url = f"https://www.amazon.in/dp/{data_asin}"
-        await page.goto(product_url, wait_until='load')
+        # ✅ USE domcontentloaded INSTEAD OF load (faster)
+        try:
+            await page.goto(product_url, wait_until='domcontentloaded', timeout=90000)
+            print(f"Opened product page for ASIN: {data_asin} in tab {tab_index}")
+        except Exception as goto_error:
+            print(f"First attempt failed for {data_asin}: {goto_error}, retrying...")
+            # ✅ RETRY ONCE
+            await asyncio.sleep(3)
+            await page.goto(product_url, wait_until='domcontentloaded', timeout=90000)
 
         print(f"Opened product page for ASIN: {data_asin} in tab {tab_index}")
         # check if captcha page opens
