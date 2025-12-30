@@ -91,6 +91,33 @@ def generate_summary(user_query: str, results: list) -> str:
 
 # ================= MCP TOOL DEFINITION =================
 
+# @mcp.tool()
+# async def query_sephora_inventory(query: str) -> str:
+#     """
+#     Queries the Sephora database for product stock, prices, and store availability.
+#     Use this tool when the user asks about Sephora products, beauty items, makeup stock, or specific brands like Fenty, Rare Beauty, etc.
+    
+#     Args:
+#         query: The user's natural language question (e.g., "Do you have Fenty lip gloss?").
+#     """
+#     logger.info(f"Received query: {query}")
+#     try:
+#         # 1. Generate SQL
+#         sql_query = generate_sql(query)
+#         logger.info(f"Generated SQL: {sql_query}")
+
+#         # 2. Execute SQL
+#         with engine.connect() as conn:
+#             df = pd.read_sql(text(sql_query), conn)
+        
+#         results = df.to_dict(orient="records")
+        
+#         # 3. Summarize
+#         answer = generate_summary(query, results)
+#         return answer
+
+#     except Exception as e:
+#         return f"Error querying Sephora data: {str(e)}"
 @mcp.tool()
 async def query_sephora_inventory(query: str) -> str:
     """
@@ -114,11 +141,21 @@ async def query_sephora_inventory(query: str) -> str:
         
         # 3. Summarize
         answer = generate_summary(query, results)
+        
+        # 4. [NEW] Append Hidden Data Block for Frontend Graphs
+        # If we have results, we append them as a JSON string with a special delimiter.
+        if results and len(results) > 0:
+            # Convert full results to JSON string
+            json_payload = json.dumps(results, default=str)
+            
+            # Append the keyword and data. The frontend will Regex search for this block.
+            # Format: ANSWER + \n\n + DELIMITER_START + JSON + DELIMITER_END
+            return f"{answer}\n\n__SEPHORA_DATA_START__\n{json_payload}\n__SEPHORA_DATA_END__"
+
         return answer
 
     except Exception as e:
         return f"Error querying Sephora data: {str(e)}"
-
 # Start the server
 if __name__ == "__main__":
     import uvicorn

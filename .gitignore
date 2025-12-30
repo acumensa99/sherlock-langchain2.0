@@ -5,3 +5,5 @@ rekogniton-webhook-service/jobs.json
 processed-videos/filtered/*.json
 processed-videos/raw/*.json
 rekogniton-webhook-service/uploads/*.mp4
+
+venv
