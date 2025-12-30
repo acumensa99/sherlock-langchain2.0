@@ -142,16 +142,14 @@ async def query_sephora_inventory(query: str) -> str:
         # 3. Summarize
         answer = generate_summary(query, results)
         
-        # 4. [NEW] Append Hidden Data Block for Frontend Graphs
-        # If we have results, we append them as a JSON string with a special delimiter.
-        if results and len(results) > 0:
-            # Convert full results to JSON string
-            json_payload = json.dumps(results, default=str)
-            
-            # Append the keyword and data. The frontend will Regex search for this block.
-            # Format: ANSWER + \n\n + DELIMITER_START + JSON + DELIMITER_END
-            return f"{answer}\n\n__SEPHORA_DATA_START__\n{json_payload}\n__SEPHORA_DATA_END__"
-
+        # 4. Append Hidden Data for Frontend Detection
+        # We append a specific keyword block that the frontend can detect using Regex
+        if results:
+            import json
+            # Serialize the data
+            json_data = json.dumps(results, default=str)
+            # Append it with strict delimiters
+            answer += f"\n\n__SEPHORA_DATA_START__{json_data}__SEPHORA_DATA_END__"
         return answer
 
     except Exception as e:
