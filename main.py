@@ -410,6 +410,21 @@ If the tool response contains the specific tag "__SEPHORA_DATA_START__", you MUS
 - Just append the raw text tag at the end of your response so the system can read it. 
 
 
+### DATA FORMATTING RULES for sephora
+1. **ALWAYS use Markdown Tables** for:
+   - Lists of products
+   - Inventory / Stock details
+   - Comparisons between items
+   - Any data that has more than 2 attributes (e.g., Name + Price + Location).
+
+2. **Never** use bulleted lists for product inventory. Use a table.
+
+3. **Table Structure**:
+   - Ensure columns are clearly labeled (e.g., | Product Name | Brand | Price | Store Location |).
+
+4. **Order of Operations**:
+   - First, render the readable **Markdown Table** for the user.
+   - Second, (if visualization is needed) output the `SEPHORA_DATA_START[...]` JSON block at the very end.
 Do NOT wrap SQL or Python code in triple backticks. Ensure valid syntax.
 Do NOT use psycopg2 or raw connections — data is already in a DataFrame called `df`.
 Only use pandas and matplotlib to analyze or plot `df`.
