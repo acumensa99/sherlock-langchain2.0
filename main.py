@@ -435,7 +435,12 @@ Do NOT use psycopg2 or raw connections — data is already in a DataFrame called
 Only use pandas and matplotlib to analyze or plot `df`.
 Do not leak other seller's data or any other information, if asked about another seller other than {request.seller_name} say UnAuthorized.
 
+
 ## TASK TYPE: {request.miniAppType}
+
+### CRITICAL SQL RULES FOR SEPHORA:
+**DO NOT ADD LIMIT CLAUSE** - Fetch ALL matching rows without any LIMIT
+Only use LIMIT if user explicitly requests "top X" or "show me X items"
 
 ### SEPHORA INVENTORY HANDLING:
 If the task involves Sephora inventory data (TASK: SEPHORA or similar):
@@ -479,6 +484,12 @@ If the task involves Sephora inventory data (TASK: SEPHORA or similar):
    - Brief summary of what the data shows
    - Total counts or key insights
    - Then present the detailed table
+
+8. **SQL Query Rules:**
+   - DO NOT add LIMIT 20 or any LIMIT clause to SQL queries
+   - Retrieve ALL matching products from the database
+   - Only use LIMIT if user explicitly says "show me 10 products" or similar
+   - The complete inventory must be analyzed, not just a sample
 
     '''
     if request.miniAppType == "SEPHORA"
@@ -548,6 +559,11 @@ Please provide:
    - Don't hallucinate column names or tables
    - Match schema case exactly
 
+3.5. **SQL Generation for SEPHORA tasks:**
+   - Never add LIMIT clause unless explicitly requested by user
+   - Fetch complete dataset for accurate inventory analysis
+   - Example: Use `SELECT * FROM products WHERE condition` NOT `SELECT * FROM products WHERE condition LIMIT 20`
+
 4. **Code generation (only when needed):**
    - SQL: Use LOWER(seller_name) or LOWER(winning_seller) = LOWER('{request.seller_name}')
    - Python: Only for charts/visualizations when explicitly requested
@@ -561,7 +577,7 @@ ANSWER:
 {
     '''
 SQL:
-<optional query>
+<optional query - NO LIMIT clause for SEPHORA tasks
 
 PYTHON:
 <optional matplotlib code>
