@@ -401,14 +401,6 @@ Please:
    - Do not write sql code if general greeting is done like Hi, Hello etc just respond as an assistant.
    - Do not write sql code unless specifically asked for chart or table.
 
-		
-CRITICAL INSTRUCTION FOR SEPHORA:
-If the tool response contains the specific tag "__SEPHORA_DATA_START__", you MUST copy that entire block (from "__SEPHORA_DATA_START__" down to "__SEPHORA_DATA_END__") verbatim to the very end of your ANSWER.
-- Do NOT summarize this hidden data block.
-- Do NOT remove this block.
-- Do NOT put it inside markdown code blocks.
-- Just append the raw text tag at the end of your response so the system can read it. 
-
 Do NOT wrap SQL or Python code in triple backticks. Ensure valid syntax.
 Do NOT use psycopg2 or raw connections — data is already in a DataFrame called `df`.
 Only use pandas and matplotlib to analyze or plot `df`.
