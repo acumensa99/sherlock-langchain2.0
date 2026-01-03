@@ -59,7 +59,8 @@ RULES:
 1. Return ONLY the raw SQL.
 2. JOIN store_inventory and products on sku_id = product_id.
 3. Use ILIKE for text.
-4. Limit to 20 results.
+4. **DO NOT add LIMIT clause** - fetch ALL matching rows unless user explicitly requests "top X" or "show me X items".
+5. For brand comparisons and inventory analysis, retrieve the complete dataset.
 """
 
 ANSWER_TEMPLATE = """
@@ -67,7 +68,11 @@ User Request: "{query}"
 Data Found: 
 {data}
 
-Summarize this for a shopper. Mention specific products, prices, and store locations if available. 
+Summarize this data for a shopper in a clear, structured format.
+- For brand comparisons: Create a markdown table showing all brands with their stock counts
+- For product listings: Show product names, brands, prices, and availability
+- For store queries: Include store names, addresses, and stock status
+Use markdown tables when presenting multiple items or comparisons.. 
 """
 
 # ================= HELPER FUNCTIONS =================
@@ -83,7 +88,7 @@ def generate_summary(user_query: str, results: list) -> str:
     if not results:
         return "I checked the inventory, but I couldn't find any products matching your request."
     
-    data_str = json.dumps(results[:15], default=str)
+    data_str = json.dumps(results, default=str)
     prompt = PromptTemplate.from_template(ANSWER_TEMPLATE)
     chain = prompt | llm_chat
     response = chain.invoke({"query": user_query, "data": data_str})
