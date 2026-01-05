@@ -58,7 +58,9 @@ Database Schema (Instagram Analytics):
    
 4. creators_payment
    - creator_id, creator_name, payment_structure (TEXT with payment rules)
+5. dont always compare the given key input with name column somtimes user can also input creator_id
 
+6. don't compare the given name with whole as it name for example there is Rohit Chauhan-fitness couch in database as name of creator if user gave Only rohit chauhan then also it should figure out the desired creator and return.
 Key Insight: posts table has DUPLICATE rows for same post_id (time-series snapshots)
 """
 
