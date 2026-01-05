@@ -107,6 +107,10 @@ client = MultiServerMCPClient({
     "SephoraService": {
         "url": "http://localhost:8007/sse",
         "transport": "sse"
+    },
+    "InstagramService": {
+        "url": "http://localhost:8008/sse",
+        "transport": "sse"
     }
 })
 
@@ -628,6 +632,18 @@ Please correct the SQL or Python code accordingly and return the updated version
                 elif request.miniAppType == "SEPHORA":
                     print("Running Sephora Intelligence Agent...")
                     async with client.session("SephoraService") as session:
+                        tools = await load_mcp_tools(session)
+
+                        mcp_agent = initialize_agent(
+                            tools,
+                            claude_3_7_sonnet_mcp,
+                            agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
+                            verbose=True
+                        )
+                        response = await mcp_agent.ainvoke(full_prompt)
+                elif request.miniAppType == "INSTAGRAM_ANALYZER":
+                    print("Running Instagram Intelligence Agent...")
+                    async with client.session("InstagramService") as session:
                         tools = await load_mcp_tools(session)
 
                         mcp_agent = initialize_agent(
