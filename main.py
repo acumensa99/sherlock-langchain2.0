@@ -509,6 +509,43 @@ If the task involves Sephora inventory data (TASK: SEPHORA or similar):
 
 ## SAMPLE DATA:
 {sample_data}
+## TASK TYPE: {request.miniAppType}
+
+### CRITICAL SQL RULES FOR INSTAGRAM:
+1. **DEDUPLICATION IS MANDATORY:** The `posts` table has DUPLICATE rows (time-series snapshots). 
+   - You MUST deduplicate using: 
+     `INNER JOIN (SELECT post_id, MAX(id) as latest_id FROM posts GROUP BY post_id) latest ON p.post_id = latest.post_id AND p.id = latest.latest_id`
+2. **COST DATA:** ALWAYS `LEFT JOIN creators c ON p.creator_id = c.creator_id` to fetch `c.cost`.
+3. **SEARCHING:** - Use `ILIKE` for text search (case-insensitive).
+   - If searching for a creator, check both `name` column and `creator_id`.
+   - Handle partial matches (e.g., if user asks for "Rohit", match "Rohit Chauhan-fitness coach").
+4. **NO LIMIT:** Do NOT add LIMIT unless user explicitly requests "top X".
+
+### INSTAGRAM DATA HANDLING:
+1. **Always format responses in clear, structured tables**:
+2. **Calculations:**
+- If `payment_structure` is available in context, calculate exact amounts (e.g., (Views/1000) * Rate) and show the math.
+3. **Analysis Style:**
+- Provide natural, conversational analysis.
+- Use emojis: 📸 (posts), 👤 (creators), 🏆 (top), 📊 (stats), 📈 (growth), 💬 (engagement).
+4. **Key Columns to Return:**
+- post_id, creator_id/name, caption (truncated), views, likes, comments, shares, c.cost, date_posted.
+
+Do NOT wrap SQL or Python code in triple backticks. Ensure valid syntax.
+     '''
+     if request.miniAppType == "INSTAGRAM"
+     else
+     f'''
+## SCHEMA:
+{schema_info}
+
+## SAMPLE DATA:
+{sample_data}
+
+Do NOT wrap SQL or Python code in triple backticks. Ensure valid syntax.
+Do NOT use psycopg2 or raw connections — data is already in a DataFrame called `df`.
+Only use pandas and matplotlib to analyze or plot `df`.
+Do not leak other seller's data or any other information, if asked about another seller other than {request.seller_name} say UnAuthorized.
 
 Do NOT wrap SQL or Python code in triple backticks. Ensure valid syntax.
 Do NOT use psycopg2 or raw connections — data is already in a DataFrame called `df`.
