@@ -286,6 +286,7 @@ async def query(request: QueryRequest):
     1. BUYBOX
     2. SEPHORA
     3. FRAUDDETECTION
+    4. INSTAGRAM_ANALYZER
     Question: "{request.question}"
 
     Give the output in the format specified below including the serial number, category number and name:
@@ -329,6 +330,8 @@ async def query(request: QueryRequest):
                 request.miniAppType = "FRAUD_DETECTION"
             elif "SEPHORA" in request.miniAppType:
                 request.miniAppType = "SEPHORA"
+            elif "INSTAGRAM_ANALYZER" in request.miniAppType:
+                request.miniAppType = "INSTAGRAM_ANALYZER"
             elif "BUYBOX" in response_text:
                 request.miniAppType = "BBCHAMPS"
             elif "SCRAPING" in response_text:
@@ -337,6 +340,8 @@ async def query(request: QueryRequest):
                 request.miniAppType = "FRAUD_DETECTION"
             elif "SEPHORA" in response_text:
                 request.miniAppType = "SEPHORA"
+            elif "INSTAGRAM_ANALYZER" in response_text:
+                request.miniAppType = "INSTAGRAM_ANALYZER"
             else:
                 raise HTTPException(status_code=400, detail="Invalid category number from LLM")
 
