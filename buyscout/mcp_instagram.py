@@ -62,6 +62,7 @@ Database Schema (Instagram Analytics):
 
 6. don't compare the given name with whole as it name for example there is Rohit Chauhan-fitness couch in database as name of creator if user gave Only rohit chauhan then also it should figure out the desired creator and return.
 Key Insight: posts table has DUPLICATE rows for same post_id (time-series snapshots)
+7. dont put any limit clause unless user explicitly requests top X or show me X items
 """
 
 SQL_TEMPLATE = """

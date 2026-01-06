@@ -512,6 +512,7 @@ If the task involves Sephora inventory data (TASK: SEPHORA or similar):
 ## TASK TYPE: {request.miniAppType}
 
 ### CRITICAL SQL RULES FOR INSTAGRAM:
+
 1. **DEDUPLICATION IS MANDATORY:** The `posts` table has DUPLICATE rows (time-series snapshots). 
    - You MUST deduplicate using: 
      `INNER JOIN (SELECT post_id, MAX(id) as latest_id FROM posts GROUP BY post_id) latest ON p.post_id = latest.post_id AND p.id = latest.latest_id`
@@ -520,7 +521,8 @@ If the task involves Sephora inventory data (TASK: SEPHORA or similar):
    - If searching for a creator, check both `name` column and `creator_id`.
    - Handle partial matches (e.g., if user asks for "Rohit", match "Rohit Chauhan-fitness coach").
 4. **NO LIMIT:** Do NOT add LIMIT unless user explicitly requests "top X".
-
+5. Most important the key from the user input could be either creator name or creator id so always make sure to check both the columns while filtering.
+6. Instagram specific data is only in the `posts` table, not in `creators` or `brands` tables.
 ### INSTAGRAM DATA HANDLING:
 1. **Always format responses in clear, structured tables**:
 2. **Calculations:**
