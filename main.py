@@ -185,19 +185,37 @@ class QueryRequestAutocomplete(BaseModel):
 
 
 # Helper: Get DB schema
-def get_db_schema_summary(engine):
+# def get_db_schema_summary(engine):
+#     inspector = inspect(engine)
+#     schema = ""
+
+#     for table_name in inspector.get_table_names():
+#         columns = inspector.get_columns(table_name)
+#         schema += f"\nTable: {table_name}\n"
+#         for col in columns:
+#             schema += f"  - {col['name']} ({col['type']})\n"
+
+#     return schema.strip()
+
+def get_db_schema_summary(engine, target_tables=None):
     inspector = inspect(engine)
     schema = ""
+    
+    all_tables = inspector.get_table_names()
+    
+    # Filter if target_tables is provided
+    if target_tables:
+        tables_to_process = [t for t in all_tables if t in target_tables]
+    else:
+        tables_to_process = all_tables
 
-    for table_name in inspector.get_table_names():
+    for table_name in tables_to_process:
         columns = inspector.get_columns(table_name)
         schema += f"\nTable: {table_name}\n"
         for col in columns:
             schema += f"  - {col['name']} ({col['type']})\n"
-
+            
     return schema.strip()
-
-
 # Helper: Get sample data
 def get_sample_data(engine, row_limit=3):
     inspector = inspect(engine)
@@ -276,7 +294,14 @@ async def query(request: QueryRequest):
         logging.info(f"Question: {request.question}")
         logging.info(f"Using model: {request.model_id}")
 
-        schema_info = get_db_schema_summary(engine)
+        # Determine which tables strictly belong to which app
+        insta_tables = ["posts", "creators", "brands"]
+        
+        if request.miniAppType in ["INSTAGRAM_ANALYZER", "INSTAGRAM"]:
+             schema_info = get_db_schema_summary(engine, target_tables=insta_tables)
+        else:
+             # Exclude instagram tables for other apps to save tokens/confusion
+             schema_info = get_db_schema_summary(engine)
         sample_data = get_sample_data(engine)
         if request.miniAppType == "BBCHAMPS" or request.miniAppType == "SCRAPPER" or request.miniAppType == "FRAUD_DETECTION":
             # question intent classifier (either buybox or scraping) using llm
@@ -347,87 +372,7 @@ async def query(request: QueryRequest):
 
             logging.info(f"Classified as: {request.miniAppType}")
 
-#         base_prompt = f"""
-# You are a helpful data analyst assistant called Sherlock. You have access to the following PostgreSQL database schema and sample data:
 
-
-# {
-#         f'''
-# ## SCHEMA:
-# {schema_info}
-
-# ## SAMPLE DATA:
-# {sample_data}
-
-# Do NOT wrap SQL or Python code in triple backticks. Ensure valid syntax.
-# Do NOT use psycopg2 or raw connections — data is already in a DataFrame called `df`.
-# Only use pandas and matplotlib to analyze or plot `df`.
-# Do not leak other seller's data or any other information, if asked about another seller other than {request.seller_name} say UnAuthorized. Return your output in the format:
-
-
-#         '''
-#         if request.miniAppType == "BBCHAMPS"
-#         else
-#         '''1. If asked about prices or scraping some data asin or the TASK is scraping, trigger the scrapper, AND DO NOT WRITE SQL OR PYTHON CODE ONLY GIVE ANSWER BASED ON THE SCRAPPER INFO
-#         2. If the retrieved scraping data has price as N/A or lot of other attributes as N/A then that means the scraping has failed so just give a normal output saying scraping has failed
-#         please try again.
-#         4. If its a scraped data then, format it in a tabular format.
-#         5. If its a non scraping related question such as hello, hi, how are you, then just respond as an assistant and do not write any sql or python code. and do not scrape
-#         or hallucinate data.
-#         6. If a Greeting is done like Hi, Hello etc just respond as an assistant and Greet back
-#         2: No scraping should happen unless the input is clearly a scraping request.
-
-#         Do not make assumptions; only scrape if the input demands product info.
-
-#         IF THE GIVEN QUESTION IS JIBERRISH THEN DO NOT TRIGGER THE SCRAPPER,
-#         JUST SAY INVALID QUESTION, IGNORE THE CONTEXT
-#         '''
-#         }
-
-# 5. If asked about fraud detection with a phone number then  trigger the fraud detection tool, Only output the status of amazon and flipkart fraud detection (for eg. present in amazon and flipkart)
-# and do not give any conlusion about the phone number provided (for eg. don't say the number is legit or fraud), AND DO NOT WRITE SQL OR PYTHON CODE ONLY GIVE ANSWER BASED ON THE SCRAPPER INFO
-# IF Task type is fraud detection then do not write python or sql code and only give the ANSWER, keep the python and sql sections blank 
-# 6. If the question is of greeting type and then dont trigger any of the tools
-# 7. You also have the ability of telecalling using the given mcp tool if the user asks you to call a particular number (the phone number must start with +91)
-# TASK:
-# {request.miniAppType}
-
-
-# The user asked the following question about seller "{request.seller_name}":
-
-# "{request.question}"
-
-# Please:
-# 1. Write a short natural language answer or insight.
-# 2. If context is given then use it to answer the question in combination with the database schema and sample data. (The info in the context doesn't exist in the database)
-# 3. Always use the database as your primary source of info, only use the context if asked so or if its a scraping related question.
-# 3. If helpful, write:
-#    - SQL code using LOWER(seller_name) or LOWER(winning_seller) = LOWER('{request.seller_name}')
-#    - Do not hallucinate SQL column names or tables. If some column names are missing try to figure out the data but using the existing sql column names.
-#    - Make sure the case of the column names is correct and match the schema.
-#    - Python matplotlib code to visualize the SQL result stored in a pandas DataFrame called `df`.
-#    - Only generate chart code if specifically requested in the question.
-#    - Do not write python code unless chart is requested.
-#    - Do not write sql code if general greeting is done like Hi, Hello etc just respond as an assistant.
-#    - Do not write sql code unless specifically asked for chart or table.
-
-# Do NOT wrap SQL or Python code in triple backticks. Ensure valid syntax.
-# Do NOT use psycopg2 or raw connections — data is already in a DataFrame called `df`.
-# Only use pandas and matplotlib to analyze or plot `df`.
-# Do not leak other seller's data or any other information, if asked about another seller other than {request.seller_name} say UnAuthorized. Return your output in the format:
-
-# ANSWER:
-# <your insight>
-# {
-#         '''
-#         SQL:
-#         <optional query>
-        
-#         PYTHON:
-#         <optional matplotlib code>
-#         ''' if request.miniAppType != "FRAUD_DETECTION" else ""
-#         }
-# """
         base_prompt = f"""
 You are a helpful data analyst assistant called Sherlock. You have access to the following PostgreSQL database schema and sample data:
 
@@ -535,7 +480,7 @@ If the task involves Sephora inventory data (TASK: SEPHORA or similar):
 
 Do NOT wrap SQL or Python code in triple backticks. Ensure valid syntax.
      '''
-     if request.miniAppType == "INSTAGRAM"
+     if request.miniAppType == "INSTAGRAM_ANALYZER"
      else
      f'''
 ## SCHEMA:
