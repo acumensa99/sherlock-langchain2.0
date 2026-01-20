@@ -1,33 +1,36 @@
 import asyncio
+import base64
+import io
 import json
-import numpy as np
+import logging
+import os
+import re
+
+# Import video analysis router
+import sys
 from datetime import datetime
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from langchain.agents import initialize_agent, AgentType
+from fastapi.responses import StreamingResponse
+from langchain.agents import AgentType, initialize_agent
 from langchain_aws import BedrockLLM, ChatBedrock
+from langchain_groq import ChatGroq
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain_mcp_adapters.tools import load_mcp_tools
 from pydantic import BaseModel
 from sqlalchemy import create_engine, inspect, text
-from langchain_groq import ChatGroq
-import pandas as pd
-import matplotlib.pyplot as plt
-import base64
-import io
-import os
-import re
-from dotenv import load_dotenv
-import logging
-from fastapi.responses import StreamingResponse
+from token_tracking_class import BUFFER_TOKENS, TokenTrackingCallback, get_pricing
 
-from token_tracking_class import TokenTrackingCallback, get_pricing, BUFFER_TOKENS
-# Import video analysis router
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), 'rekogniton-webhook-service'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "rekogniton-webhook-service"))
 
 try:
     from router import router as video_analysis_router
+
     VIDEO_ANALYSIS_AVAILABLE = True
 except ImportError as e:
     logging.warning(f"Video analysis router not available: {e}")
@@ -91,28 +94,15 @@ claude_3_7_sonnet_mcp = ChatBedrock(
     # callbacks=[TokenTrackingCallback()],
 )
 
-client = MultiServerMCPClient({
-    "AmazonBuyBoxScraper": {
-        "url": "http://localhost:8001/sse",
-        "transport": "sse"
-    },
-    "FraudDetection": {
-        "url": "http://localhost:8002/sse",
-        "transport": "sse"
-    },
-    "TelecallerServer": {
-        "url": "http://localhost:8006/sse",
-        "transport": "sse"
-    },
-    "SephoraService": {
-        "url": "http://localhost:8007/sse",
-        "transport": "sse"
-    },
-    "InstagramService": {
-        "url": "http://localhost:8008/sse",
-        "transport": "sse"
+client = MultiServerMCPClient(
+    {
+        "AmazonBuyBoxScraper": {"url": "http://localhost:8001/sse", "transport": "sse"},
+        "FraudDetection": {"url": "http://localhost:8002/sse", "transport": "sse"},
+        "TelecallerServer": {"url": "http://localhost:8006/sse", "transport": "sse"},
+        "SephoraService": {"url": "http://localhost:8007/sse", "transport": "sse"},
+        "InstagramService": {"url": "http://localhost:8008/sse", "transport": "sse"},
     }
-})
+)
 
 
 async def run_agent():
@@ -127,7 +117,7 @@ async def run_agent():
                 tools,
                 claude_3_7_sonnet_mcp,
                 agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
-                verbose=True
+                verbose=True,
             )
             return mcp_agent
 
@@ -197,12 +187,13 @@ class QueryRequestAutocomplete(BaseModel):
 
 #     return schema.strip()
 
+
 def get_db_schema_summary(engine, target_tables=None):
     inspector = inspect(engine)
     schema = ""
-    
+
     all_tables = inspector.get_table_names()
-    
+
     # Filter if target_tables is provided
     if target_tables:
         tables_to_process = [t for t in all_tables if t in target_tables]
@@ -214,8 +205,10 @@ def get_db_schema_summary(engine, target_tables=None):
         schema += f"\nTable: {table_name}\n"
         for col in columns:
             schema += f"  - {col['name']} ({col['type']})\n"
-            
+
     return schema.strip()
+
+
 # Helper: Get sample data
 def get_sample_data(engine, row_limit=3):
     inspector = inspect(engine)
@@ -241,11 +234,16 @@ async def root():
         "status": "running",
         "service": "sherlock-langchain-api",
         "available_endpoints": {
-            "data_analytics": ["/query", "/general", "/generate_title", "/autocomplete"],
+            "data_analytics": [
+                "/query",
+                "/general",
+                "/generate_title",
+                "/autocomplete",
+            ],
             "models": ["/enabled_models"],
-        }
+        },
     }
-    
+
     if VIDEO_ANALYSIS_AVAILABLE:
         services["available_endpoints"]["video_analysis"] = [
             "/video-analysis/upload",
@@ -253,9 +251,9 @@ async def root():
             "/video-analysis/chat/{job_id}",
             "/video-analysis/summary/{job_id}",
             "/video-analysis/files/filtered",
-            "/video-analysis/chat-file"
+            "/video-analysis/chat-file",
         ]
-    
+
     return services
 
 
@@ -267,8 +265,8 @@ async def health_check():
         "timestamp": datetime.utcnow().isoformat(),
         "services": {
             "data_analytics": "active",
-            "video_analysis": "active" if VIDEO_ANALYSIS_AVAILABLE else "not_available"
-        }
+            "video_analysis": "active" if VIDEO_ANALYSIS_AVAILABLE else "not_available",
+        },
     }
 
 
@@ -283,10 +281,14 @@ async def get_enabled_models():
 
 @app.post("/query")
 async def query(request: QueryRequest):
-    logging.info(f"Received query request {request}", )
+    logging.info(
+        f"Received query request {request}",
+    )
     # Validate model_id
     if request.model_id not in models_dict:
-        raise HTTPException(status_code=400, detail=f"Invalid model_id: {request.model_id}")
+        raise HTTPException(
+            status_code=400, detail=f"Invalid model_id: {request.model_id}"
+        )
     try:
         # Initialize the agent
         # mcp_agent = await run_agent()
@@ -296,14 +298,18 @@ async def query(request: QueryRequest):
 
         # Determine which tables strictly belong to which app
         insta_tables = ["posts", "creators", "brands"]
-        
+
         if request.miniAppType in ["INSTAGRAM_ANALYZER", "INSTAGRAM"]:
-             schema_info = get_db_schema_summary(engine, target_tables=insta_tables)
+            schema_info = get_db_schema_summary(engine, target_tables=insta_tables)
         else:
-             # Exclude instagram tables for other apps to save tokens/confusion
-             schema_info = get_db_schema_summary(engine)
+            # Exclude instagram tables for other apps to save tokens/confusion
+            schema_info = get_db_schema_summary(engine)
         sample_data = get_sample_data(engine)
-        if request.miniAppType == "BBCHAMPS" or request.miniAppType == "SCRAPPER" or request.miniAppType == "FRAUD_DETECTION":
+        if (
+            request.miniAppType == "BBCHAMPS"
+            or request.miniAppType == "SCRAPPER"
+            or request.miniAppType == "FRAUD_DETECTION"
+        ):
             # question intent classifier (either buybox or scraping) using llm
             print("Classifying question intent using LLM...")
             response = llama3_70b.invoke(f"""
@@ -321,7 +327,9 @@ async def query(request: QueryRequest):
     1. <category number> - <category name>
 
             """)
-            response_text = response.content if hasattr(response, "content") else str(response)
+            response_text = (
+                response.content if hasattr(response, "content") else str(response)
+            )
             print(f"Response from model: {response_text}")
             usage = getattr(response, "usage_metadata", {})
             input_tokens = usage.get("input_tokens", 0) + BUFFER_TOKENS
@@ -331,9 +339,11 @@ async def query(request: QueryRequest):
             token_usage = {
                 "input_tokens": input_tokens,
                 "output_tokens": output_tokens,
-                "total_tokens": total_tokens
+                "total_tokens": total_tokens,
             }
-            logging.info(f"Input tokens: {input_tokens}, Output tokens: {output_tokens}, Total tokens: {total_tokens}")
+            logging.info(
+                f"Input tokens: {input_tokens}, Output tokens: {output_tokens}, Total tokens: {total_tokens}"
+            )
             # get pricing
             #            "input_cost": input_cost,
             #    "output_cost": output_cost,
@@ -368,16 +378,17 @@ async def query(request: QueryRequest):
             elif "INSTAGRAM_ANALYZER" in response_text:
                 request.miniAppType = "INSTAGRAM_ANALYZER"
             else:
-                raise HTTPException(status_code=400, detail="Invalid category number from LLM")
+                raise HTTPException(
+                    status_code=400, detail="Invalid category number from LLM"
+                )
 
             logging.info(f"Classified as: {request.miniAppType}")
-
 
         base_prompt = f"""
 You are a helpful data analyst assistant called Sherlock. You have access to the following PostgreSQL database schema and sample data:
 
 {
-    f'''
+            f'''
 ## SCHEMA:
 {schema_info}
 
@@ -446,9 +457,8 @@ If the task involves Sephora inventory data (TASK: SEPHORA or similar):
    - The complete inventory must be analyzed, not just a sample
 
     '''
-    if request.miniAppType == "SEPHORA"
-    else
-    f'''
+            if request.miniAppType == "SEPHORA"
+            else f'''
 ## SCHEMA:
 {schema_info}
 
@@ -458,8 +468,8 @@ If the task involves Sephora inventory data (TASK: SEPHORA or similar):
 
 ### CRITICAL SQL RULES FOR INSTAGRAM:
 
-1. **DEDUPLICATION IS MANDATORY:** The `posts` table has DUPLICATE rows (time-series snapshots). 
-   - You MUST deduplicate using: 
+1. **DEDUPLICATION IS MANDATORY:** The `posts` table has DUPLICATE rows (time-series snapshots).
+   - You MUST deduplicate using:
      `INNER JOIN (SELECT post_id, MAX(id) as latest_id FROM posts GROUP BY post_id) latest ON p.post_id = latest.post_id AND p.id = latest.latest_id`
 2. **COST DATA:** ALWAYS `LEFT JOIN creators c ON p.creator_id = c.creator_id` to fetch `c.cost`.
 3. **SEARCHING:** - Use `ILIKE` for text search (case-insensitive).
@@ -480,9 +490,8 @@ If the task involves Sephora inventory data (TASK: SEPHORA or similar):
 
 Do NOT wrap SQL or Python code in triple backticks. Ensure valid syntax.
      '''
-     if request.miniAppType == "INSTAGRAM_ANALYZER"
-     else
-     f'''
+            if request.miniAppType == "INSTAGRAM_ANALYZER"
+            else f'''
 ## SCHEMA:
 {schema_info}
 
@@ -499,16 +508,17 @@ Do NOT use psycopg2 or raw connections — data is already in a DataFrame called
 Only use pandas and matplotlib to analyze or plot `df`.
 Do not leak other seller's data or any other information, if asked about another seller other than {request.seller_name} say UnAuthorized.
     '''
-}
+        }
 
 {
-    '''
+            '''
 ### BBCHAMPS SPECIFIC RULES:
-Do not write SQL or Python code unless chart or specific data analysis is requested.
+If the user asks for data (buybox, sales, inventory, etc.), YOU MUST GENERATE SQL to fetch it.
+Do NOT say "I don't see any data". Query the database first.
+Only write Python code if a chart/plot is requested.
     '''
-    if request.miniAppType == "BBCHAMPS"
-    else
-    '''
+            if request.miniAppType == "BBCHAMPS"
+            else '''
 ### GENERAL RULES:
 1. If asked about prices or scraping some data (ASIN), trigger the scraper. DO NOT WRITE SQL OR PYTHON CODE - only provide answers based on scraper info
 2. If retrieved scraping data has price as N/A or many attributes as N/A, the scraping failed - inform the user and suggest trying again
@@ -530,7 +540,7 @@ If asked about fraud detection with a phone number:
 ### TELECALLING:
 You can make calls using the MCP tool if requested (phone numbers must start with +91)
     '''
-}
+        }
 
 The user asked the following question about seller "{request.seller_name}":
 
@@ -558,7 +568,9 @@ Please provide:
    - Example: Use `SELECT * FROM products WHERE condition` NOT `SELECT * FROM products WHERE condition LIMIT 20`
 
 4. **Code generation (only when needed):**
-   - SQL: Use LOWER(seller_name) or LOWER(winning_seller) = LOWER('{request.seller_name}')
+   - SQL: Use LOWER(seller_name) or LOWER(winning_seller) = LOWER('{
+            request.seller_name
+        }')
    - Python: Only for charts/visualizations when explicitly requested
    - Don't write code for greetings or simple queries
 
@@ -568,14 +580,16 @@ Return your output in the format:
 ANSWER:
 <your insight with tables when applicable>
 {
-    '''
+            '''
 SQL:
 <optional query - NO LIMIT clause for SEPHORA tasks
 
 PYTHON:
 <optional matplotlib code>
-    ''' if request.miniAppType not in ["FRAUD_DETECTION", "SEPHORA"] else ""
-}
+    '''
+            if request.miniAppType not in ["FRAUD_DETECTION", "SEPHORA"]
+            else ""
+        }
 """
         total_tokens = 0
         total_input_tokens = 0
@@ -602,7 +616,7 @@ Please correct the SQL or Python code accordingly and return the updated version
                             tools,
                             claude_3_7_sonnet_mcp,
                             agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
-                            verbose=True
+                            verbose=True,
                         )
                         response = await mcp_agent.ainvoke(full_prompt)
                 elif request.miniAppType == "FRAUD_DETECTION":
@@ -615,7 +629,7 @@ Please correct the SQL or Python code accordingly and return the updated version
                             tools,
                             claude_3_7_sonnet_mcp,
                             agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
-                            verbose=True
+                            verbose=True,
                         )
                         response = await mcp_agent.ainvoke(full_prompt)
                 elif request.miniAppType == "SEPHORA":
@@ -627,7 +641,7 @@ Please correct the SQL or Python code accordingly and return the updated version
                             tools,
                             claude_3_7_sonnet_mcp,
                             agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
-                            verbose=True
+                            verbose=True,
                         )
                         response = await mcp_agent.ainvoke(full_prompt)
                 elif request.miniAppType == "INSTAGRAM_ANALYZER":
@@ -639,33 +653,48 @@ Please correct the SQL or Python code accordingly and return the updated version
                             tools,
                             claude_3_7_sonnet_mcp,
                             agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
-                            verbose=True
+                            verbose=True,
                         )
                         response = await mcp_agent.ainvoke(full_prompt)
                 else:
-                    if "call" in full_prompt:
+                    # Check for explicit calling intent in user question to avoid false positives from system prompt
+                    if (
+                        "call" in request.question.lower()
+                        or "telecall" in request.question.lower()
+                    ):
                         print("Running Telecaller Agent...")
-                        async with client.session("TelecallerServer") as session:
-                            tools = await load_mcp_tools(session)
+                        try:
+                            async with client.session("TelecallerServer") as session:
+                                tools = await load_mcp_tools(session)
 
-                            # Create and run the agent (inside session context!)
-                            mcp_agent = initialize_agent(
-                                tools,
-                                claude_3_7_sonnet_mcp,
-                                agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
-                                verbose=True
+                                # Create and run the agent (inside session context!)
+                                mcp_agent = initialize_agent(
+                                    tools,
+                                    claude_3_7_sonnet_mcp,
+                                    agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
+                                    verbose=True,
+                                )
+                                response = await mcp_agent.ainvoke(full_prompt)
+                        except Exception as e:
+                            logging.warning(
+                                f"Telecaller unreachable, falling back to standard model: {e}"
                             )
-                            response = await mcp_agent.ainvoke(full_prompt)
-                    else:        
+                            response = models_dict.get(request.model_id).invoke(
+                                full_prompt
+                            )
+                    else:
                         response = models_dict.get(request.model_id).invoke(full_prompt)
-            response_text = response.content if hasattr(response, "content") else str(response)
+            response_text = (
+                response.content if hasattr(response, "content") else str(response)
+            )
             print(f"Response from model: {response_text}")
             usage = getattr(response, "usage_metadata", {})
             input_tokens1 = usage.get("input_tokens", 0) + BUFFER_TOKENS
             output_tokens1 = usage.get("output_tokens", 0) + BUFFER_TOKENS
             total_tokens1 = input_tokens1 + output_tokens1
             logging.info(
-                f"Input tokens: {input_tokens1}, Output tokens: {output_tokens1}, Total tokens: {total_tokens1}")
+                f"Input tokens: {input_tokens1}, Output tokens: {output_tokens1}, Total tokens: {total_tokens1}"
+            )
             # Update total tokens
             nonlocal total_tokens, total_input_tokens, total_output_tokens
             total_tokens += total_tokens1
@@ -674,9 +703,13 @@ Please correct the SQL or Python code accordingly and return the updated version
 
             # create a token object
 
-            answer_match = re.search(r'ANSWER:\s*(.*?)\s*(SQL:|$)', response_text, re.DOTALL)
-            sql_match = re.search(r'SQL:\s*(.*?)\s*(PYTHON:|$)', response_text, re.DOTALL)
-            py_match = re.search(r'PYTHON:\s*(.*)', response_text, re.DOTALL)
+            answer_match = re.search(
+                r"ANSWER:\s*(.*?)\s*(SQL:|$)", response_text, re.DOTALL
+            )
+            sql_match = re.search(
+                r"SQL:\s*(.*?)\s*(PYTHON:|$)", response_text, re.DOTALL
+            )
+            py_match = re.search(r"PYTHON:\s*(.*)", response_text, re.DOTALL)
 
             reasoning = response_text.rsplit("ANSWER:", 1)[-1]
             sql_code = sql_match.group(1).strip() if sql_match else ""
@@ -703,10 +736,14 @@ Please correct the SQL or Python code accordingly and return the updated version
                 except Exception as e_sql:
                     logging.warning(f"SQL error (attempt {attempt + 1}): {e_sql}")
                     if attempt < 9:
-                        reasoning, sql_code, py_code = await run_pipeline(base_prompt, attempt_fix=True,
-                                                                          error_msg=str(e_sql))
+                        reasoning, sql_code, py_code = await run_pipeline(
+                            base_prompt, attempt_fix=True, error_msg=str(e_sql)
+                        )
                     else:
-                        raise HTTPException(status_code=500, detail=f"SQL failed after 3 attempts: {e_sql}")
+                        raise HTTPException(
+                            status_code=500,
+                            detail=f"SQL failed after 3 attempts: {e_sql}",
+                        )
 
         # Retry Python execution up to 3 times
         if py_code and df is not None and not df.empty:
@@ -714,16 +751,24 @@ Please correct the SQL or Python code accordingly and return the updated version
                 try:
                     if py_code and df is not None and not df.empty:
                         logging.info(f"Executing Python attempt {attempt + 1}...")
-                        exec_env = {"df": truncate_dataframe(df, token_limit=5000), "plt": plt, "pd": pd}
-                        py_code = py_code.replace("plt.show()", "")  # Avoid showing plots in Jupyter
+                        exec_env = {
+                            "df": truncate_dataframe(df, token_limit=5000),
+                            "plt": plt,
+                            "pd": pd,
+                        }
+                        py_code = py_code.replace(
+                            "plt.show()", ""
+                        )  # Avoid showing plots in Jupyter
                         exec(py_code, exec_env)
 
                         fig = plt.gcf()
                         if fig and fig.get_axes():
                             buf = io.BytesIO()
-                            plt.savefig(buf, format='png')  # Save directly to buffer
+                            plt.savefig(buf, format="png")  # Save directly to buffer
                             buf.seek(0)
-                            encoded_img = base64.b64encode(buf.read()).decode('utf-8')  # Encode as base64
+                            encoded_img = base64.b64encode(buf.read()).decode(
+                                "utf-8"
+                            )  # Encode as base64
                             buf.close()
                             plt.close(fig)  # Clear figure
                             logging.info("Chart successfully encoded as base64.")
@@ -731,10 +776,14 @@ Please correct the SQL or Python code accordingly and return the updated version
                 except Exception as e_py:
                     logging.warning(f"Python error (attempt {attempt + 1}): {e_py}")
                     if attempt < 5:
-                        reasoning, sql_code, py_code = await run_pipeline(base_prompt, attempt_fix=True,
-                                                                          error_msg=str(e_py))
+                        reasoning, sql_code, py_code = await run_pipeline(
+                            base_prompt, attempt_fix=True, error_msg=str(e_py)
+                        )
                     else:
-                        raise HTTPException(status_code=500, detail=f"Python failed after 3 attempts: {e_py}")
+                        raise HTTPException(
+                            status_code=500,
+                            detail=f"Python failed after 3 attempts: {e_py}",
+                        )
         if df is not None:
             df.replace([np.inf, -np.inf], np.nan, inplace=True)  # Replace inf with NaN
             df.fillna("null", inplace=True)  # Replace NaN with a string
@@ -742,17 +791,26 @@ Please correct the SQL or Python code accordingly and return the updated version
         else:
             output_dict = None
         if output_dict:
-            df = df.applymap(lambda x: x.isoformat() if isinstance(x, pd.Timestamp) else x)
+            df = df.applymap(
+                lambda x: x.isoformat() if isinstance(x, pd.Timestamp) else x
+            )
             # remove id column from df
-            df = df.loc[:, ~df.columns.str.contains('^id$')]
+            df = df.loc[:, ~df.columns.str.contains("^id$")]
 
-            output_dict = truncate_dataframe(df, token_limit=5000).to_dict(orient="records")
+            output_dict = truncate_dataframe(df, token_limit=5000).to_dict(
+                orient="records"
+            )
             if request.miniAppType == "BBCHAMPS":
-                reasoning, token_usage = await generate_reason(request.question, request.model_id,
-                                                               json.dumps(output_dict), request.seller_name)
+                reasoning, token_usage = await generate_reason(
+                    request.question,
+                    request.model_id,
+                    json.dumps(output_dict),
+                    request.seller_name,
+                )
             if request.miniAppType == "SCRAPING":
-                reasoning, token_usage = await generate_reason(request.question, request.model_id, reasoning,
-                                                               request.seller_name)
+                reasoning, token_usage = await generate_reason(
+                    request.question, request.model_id, reasoning, request.seller_name
+                )
             total_output_tokens += token_usage.get("output_tokens", 0)
             total_input_tokens += token_usage.get("input_tokens", 0)
             total_tokens += token_usage.get("total_tokens", 0)
@@ -760,7 +818,7 @@ Please correct the SQL or Python code accordingly and return the updated version
         token_usage = {
             "input_tokens": total_input_tokens,
             "output_tokens": total_output_tokens,
-            "total_tokens": total_tokens
+            "total_tokens": total_tokens,
         }
 
         # get pricing
@@ -777,8 +835,7 @@ Please correct the SQL or Python code accordingly and return the updated version
             "python_code": py_code or None,
             "pricing": pricing,
             "miniAppType": request.miniAppType,
-
-            "token_usage": token_usage
+            "token_usage": token_usage,
         }
 
     except Exception as e:
@@ -810,7 +867,9 @@ def truncate_dataframe(df, token_limit=3000):
 async def generate_title(request: QueryRequest):
     print("test")
     try:
-        logging.info(f"Received request to generate title for question: {request.question}")
+        logging.info(
+            f"Received request to generate title for question: {request.question}"
+        )
 
         # Prompt for generating chat title
         title_prompt = f"""
@@ -827,10 +886,12 @@ async def generate_title(request: QueryRequest):
 
         # Invoke LLM to generate title
         response = llama_groq.invoke(title_prompt)
-        response_text = response.content if hasattr(response, "content") else str(response)
+        response_text = (
+            response.content if hasattr(response, "content") else str(response)
+        )
 
         # Extract title from response
-        title_match = re.search(r'ANSWER:\s*(.*)', response_text, re.DOTALL)
+        title_match = re.search(r"ANSWER:\s*(.*)", response_text, re.DOTALL)
         if title_match:
             title = title_match.group(1).strip()
         else:
@@ -848,7 +909,9 @@ async def generate_title(request: QueryRequest):
 @app.post("/general")
 async def general(request: QueryRequest):
     if request.model_id not in models_dict:
-        raise HTTPException(status_code=400, detail=f"Invalid model_id: {request.model_id}")
+        raise HTTPException(
+            status_code=400, detail=f"Invalid model_id: {request.model_id}"
+        )
     try:
         logging.info(f"Received request for general chat")
         logging.info(f"Using model: {request.model_id}")
@@ -869,7 +932,9 @@ async def general(request: QueryRequest):
 
         # Invoke LLM to generate title
         response = models_dict.get(request.model_id).invoke(title_prompt)
-        response_text = response.content if hasattr(response, "content") else str(response)
+        response_text = (
+            response.content if hasattr(response, "content") else str(response)
+        )
         print(f"Response from model: {response_text}")
         usage = getattr(response, "usage_metadata", {})
         input_tokens = usage.get("input_tokens", 0) + BUFFER_TOKENS
@@ -879,10 +944,12 @@ async def general(request: QueryRequest):
         token_usage = {
             "input_tokens": input_tokens,
             "output_tokens": output_tokens,
-            "total_tokens": total_tokens
+            "total_tokens": total_tokens,
         }
 
-        logging.info(f"Input tokens: {input_tokens}, Output tokens: {output_tokens}, Total tokens: {total_tokens}")
+        logging.info(
+            f"Input tokens: {input_tokens}, Output tokens: {output_tokens}, Total tokens: {total_tokens}"
+        )
         # get pricing
         #            "input_cost": input_cost,
         #    "output_cost": output_cost,
@@ -890,7 +957,7 @@ async def general(request: QueryRequest):
         pricing = get_pricing(request.model_id, input_tokens, output_tokens)
         logging.info(f"Pricing: {pricing}")
         # Extract title from response
-        answer_match = re.search(r'ANSWER:\s*(.*)', response_text, re.DOTALL)
+        answer_match = re.search(r"ANSWER:\s*(.*)", response_text, re.DOTALL)
         answer = ""
         if answer_match:
             answer = answer_match.group(1).strip()
@@ -904,8 +971,7 @@ async def general(request: QueryRequest):
             "sql": None,
             "python_code": None,
             "pricing": pricing,
-            "token_usage": token_usage
-
+            "token_usage": token_usage,
         }
 
     except Exception as e:
@@ -936,15 +1002,15 @@ async def autocomplete_business(request: QueryRequestAutocomplete):
 
         # Call the LLM
         response = llama_groq.invoke(business_prompt)
-        response_text = response.content if hasattr(response, "content") else str(response)
+        response_text = (
+            response.content if hasattr(response, "content") else str(response)
+        )
         print(response_text)
 
         # Extract 5 completions
-        suggestions = re.findall(r'\d+\.\s*(.*)', response_text)
+        suggestions = re.findall(r"\d+\.\s*(.*)", response_text)
 
-        return {
-            "completions": suggestions[:5]
-        }
+        return {"completions": suggestions[:5]}
 
     except Exception as e:
         logging.exception("Error generating business autocomplete suggestions")
@@ -954,7 +1020,9 @@ async def autocomplete_business(request: QueryRequestAutocomplete):
 @app.post("/general-streaming")
 async def general_streaming(request: QueryRequest):
     if request.model_id not in models_dict:
-        raise HTTPException(status_code=400, detail=f"Invalid model_id: {request.model_id}")
+        raise HTTPException(
+            status_code=400, detail=f"Invalid model_id: {request.model_id}"
+        )
 
     try:
         logging.info(f"Received request for general chat")
@@ -979,7 +1047,9 @@ async def general_streaming(request: QueryRequest):
 
         # Ensure the model supports streaming
         if not hasattr(model, "stream"):
-            raise HTTPException(status_code=500, detail="Streaming not supported for this model.")
+            raise HTTPException(
+                status_code=500, detail="Streaming not supported for this model."
+            )
 
         # Streaming generator
         def generate_chunks():
@@ -1021,16 +1091,20 @@ async def generate_reason(question, model_id, dataframe_json, seller_name):
 
         # Invoke LLM to generate reasoning
         response = models_dict.get(model_id).invoke(reasoning_prompt)
-        response_text = response.content if hasattr(response, "content") else str(response)
+        response_text = (
+            response.content if hasattr(response, "content") else str(response)
+        )
         print(f"Response from model: {response_text}")
         usage = getattr(response, "usage_metadata", {})
         input_tokens = usage.get("input_tokens", 0) + BUFFER_TOKENS
         output_tokens = usage.get("output_tokens", 0) + BUFFER_TOKENS
         total_tokens = input_tokens + output_tokens
-        logging.info(f"Input tokens: {input_tokens}, Output tokens: {output_tokens}, Total tokens: {total_tokens}")
+        logging.info(
+            f"Input tokens: {input_tokens}, Output tokens: {output_tokens}, Total tokens: {total_tokens}"
+        )
 
         # Extract reasoning from response
-        reasoning_match = re.search(r'ANSWER:\s*(.*)', response_text, re.DOTALL)
+        reasoning_match = re.search(r"ANSWER:\s*(.*)", response_text, re.DOTALL)
         if reasoning_match:
             reasoning = reasoning_match.group(1).strip()
         else:
@@ -1039,7 +1113,7 @@ async def generate_reason(question, model_id, dataframe_json, seller_name):
         return reasoning, {
             "input_tokens": input_tokens,
             "output_tokens": output_tokens,
-            "total_tokens": total_tokens
+            "total_tokens": total_tokens,
         }
 
     except Exception as e:
