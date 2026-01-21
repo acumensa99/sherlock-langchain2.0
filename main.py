@@ -9,6 +9,7 @@ import re
 # Import video analysis router
 import sys
 from datetime import datetime
+from typing import Any, Dict, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -167,6 +168,7 @@ class QueryRequest(BaseModel):
     question: str
     model_id: str
     miniAppType: str
+    rls_context: Optional[Dict[str, Any]] = None
 
 
 # Request model
@@ -730,6 +732,49 @@ Please correct the SQL or Python code accordingly and return the updated version
                     if sql_code:
                         logging.info(f"Executing SQL attempt {attempt + 1}...")
                         with engine.connect() as conn:
+                            # Apply RLS Context if present
+                            if request.rls_context:
+                                rls = request.rls_context
+                                # Set Role
+                                role = rls.get("user_role", "user")
+                                conn.execute(
+                                    text(f"SET LOCAL app.user_role = '{role}'")
+                                )
+
+                                # Set Company ID
+                                company_id = rls.get("company_id")
+                                if company_id:
+                                    conn.execute(
+                                        text(
+                                            f"SET LOCAL app.current_company_id = '{company_id}'"
+                                        )
+                                    )
+
+                                # Set Allowed Categories
+                                allowed_cats = rls.get("allowed_categories", [])
+                                if allowed_cats and "*" not in allowed_cats:
+                                    # Format as PostgreSQL array literal: {"cat1","cat2"}
+                                    safe_cats = [
+                                        c.replace('"', '\\"') for c in allowed_cats
+                                    ]
+                                    cats_pg_array = (
+                                        "{"
+                                        + ",".join(f'"{c}"' for c in safe_cats)
+                                        + "}"
+                                    )
+                                    conn.execute(
+                                        text(
+                                            f"SET LOCAL app.allowed_categories = '{cats_pg_array}'"
+                                        )
+                                    )
+
+                                # Set Max Days
+                                max_days = rls.get("max_days")
+                                if max_days:
+                                    conn.execute(
+                                        text(f"SET LOCAL app.max_days = '{max_days}'")
+                                    )
+
                             df = pd.read_sql(text(sql_code), conn)
                         logging.info(f"SQL returned {len(df)} rows.")
                         break  # Success
