@@ -731,7 +731,7 @@ Please correct the SQL or Python code accordingly and return the updated version
                 try:
                     if sql_code:
                         logging.info(f"Executing SQL attempt {attempt + 1}...")
-                        with engine.connect() as conn:
+                        with engine.begin() as conn:
                             # Apply RLS Context if present
                             if request.rls_context:
                                 rls = request.rls_context
@@ -753,18 +753,14 @@ Please correct the SQL or Python code accordingly and return the updated version
                                 # Set Allowed Categories
                                 allowed_cats = rls.get("allowed_categories", [])
                                 if allowed_cats and "*" not in allowed_cats:
-                                    # Format as PostgreSQL array literal: {"cat1","cat2"}
+                                    # Format as CSV string for RLS policy (string_to_array)
                                     safe_cats = [
-                                        c.replace('"', '\\"') for c in allowed_cats
+                                        c.replace("'", "''") for c in allowed_cats
                                     ]
-                                    cats_pg_array = (
-                                        "{"
-                                        + ",".join(f'"{c}"' for c in safe_cats)
-                                        + "}"
-                                    )
+                                    cats_csv = ",".join(safe_cats)
                                     conn.execute(
                                         text(
-                                            f"SET LOCAL app.allowed_categories = '{cats_pg_array}'"
+                                            f"SET LOCAL app.allowed_categories = '{cats_csv}'"
                                         )
                                     )
 
