@@ -69,7 +69,6 @@ SQL_TEMPLATE = """
 You are a PostgreSQL expert for Instagram analytics. Convert the request to a SQL query.
 {schema}
 Request: "{query}"
-
 CRITICAL RULES:
 1. Return ONLY the raw SQL query (no markdown, no backticks)
 2. Posts table has DUPLICATE rows - ALWAYS deduplicate using:

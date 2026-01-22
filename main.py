@@ -111,6 +111,10 @@ client = MultiServerMCPClient({
     "InstagramService": {
         "url": "http://localhost:8008/sse",
         "transport": "sse"
+    },
+    "TestRAI": {
+        "url": "http://localhost:8010/sse",
+        "transport": "sse"
     }
 })
 
@@ -294,13 +298,11 @@ async def query(request: QueryRequest):
         logging.info(f"Question: {request.question}")
         logging.info(f"Using model: {request.model_id}")
 
-        # Determine which tables strictly belong to which app
         insta_tables = ["posts", "creators", "brands"]
         
         if request.miniAppType in ["INSTAGRAM_ANALYZER", "INSTAGRAM"]:
              schema_info = get_db_schema_summary(engine, target_tables=insta_tables)
         else:
-             # Exclude instagram tables for other apps to save tokens/confusion
              schema_info = get_db_schema_summary(engine)
         sample_data = get_sample_data(engine)
         if request.miniAppType == "BBCHAMPS" or request.miniAppType == "SCRAPPER" or request.miniAppType == "FRAUD_DETECTION":
@@ -312,10 +314,12 @@ async def query(request: QueryRequest):
     2. SEPHORA
     3. FRAUDDETECTION
     4. INSTAGRAM_ANALYZER
+    5. TESTRAI
     Question: "{request.question}"
 
-    Give the output in the format specified below including the serial number, category number and name:
-    Also Do not give SCRAPING AND FRAUDDETECTION unless explicitly asked for scraping or fraud detection in the question.
+  Give the output in the format specified below including the serial number, category number and name:
+Also Do not give SCRAPING AND FRAUDDETECTION unless explicitly asked for scraping or fraud detection in the question.
+Do not give TESTRAI unless explicitly asked for test case generation or testing a URL.
 
     ANSWER:
     1. <category number> - <category name>
@@ -357,6 +361,8 @@ async def query(request: QueryRequest):
                 request.miniAppType = "SEPHORA"
             elif "INSTAGRAM_ANALYZER" in request.miniAppType:
                 request.miniAppType = "INSTAGRAM_ANALYZER"
+            elif "TESTRAI" in request.miniAppType:
+                request.miniAppType = "TESTRAI"
             elif "BUYBOX" in response_text:
                 request.miniAppType = "BBCHAMPS"
             elif "SCRAPING" in response_text:
@@ -367,6 +373,8 @@ async def query(request: QueryRequest):
                 request.miniAppType = "SEPHORA"
             elif "INSTAGRAM_ANALYZER" in response_text:
                 request.miniAppType = "INSTAGRAM_ANALYZER"
+            elif "TESTRAI" in response_text:
+                request.miniAppType = "TESTRAI"
             else:
                 raise HTTPException(status_code=400, detail="Invalid category number from LLM")
 
@@ -509,6 +517,22 @@ Do not write SQL or Python code unless chart or specific data analysis is reques
     if request.miniAppType == "BBCHAMPS"
     else
     '''
+    ### TESTRAI - TEST CASE GENERATION:
+If asked to generate test cases for a URL:
+- User must provide: URL and testing requirements
+- Trigger the TestRAI tool to generate comprehensive test cases
+- DO NOT WRITE SQL OR PYTHON CODE
+- Present test cases in clear, structured markdown tables
+- Include session ID for future reference
+- Show total count and database save status
+
+Test cases cover:
+- Functional testing (navigation, forms, buttons)
+- UI/UX validation (visual elements, responsiveness)
+- Security checks (authentication, data validation)
+- Performance considerations (load times)
+- Error handling (edge cases, invalid inputs)
+- Accessibility (ARIA labels, keyboard navigation)
 ### GENERAL RULES:
 1. If asked about prices or scraping some data (ASIN), trigger the scraper. DO NOT WRITE SQL OR PYTHON CODE - only provide answers based on scraper info
 2. If retrieved scraping data has price as N/A or many attributes as N/A, the scraping failed - inform the user and suggest trying again
@@ -642,6 +666,18 @@ Please correct the SQL or Python code accordingly and return the updated version
                             verbose=True
                         )
                         response = await mcp_agent.ainvoke(full_prompt)
+                elif request.miniAppType == "TESTRAI":
+                    print("Running TestRAI Agent...")
+                    async with client.session("TestRAI") as session:
+                        tools = await load_mcp_tools(session)
+
+                        mcp_agent = initialize_agent(
+                    tools,
+                    claude_3_7_sonnet_mcp,
+                    agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
+                     verbose=True
+                    )
+                    response = await mcp_agent.ainvoke(full_prompt)
                 else:
                     if "call" in full_prompt:
                         print("Running Telecaller Agent...")
