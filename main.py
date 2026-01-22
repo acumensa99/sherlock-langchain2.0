@@ -666,18 +666,55 @@ Please correct the SQL or Python code accordingly and return the updated version
                             verbose=True
                         )
                         response = await mcp_agent.ainvoke(full_prompt)
+                # elif request.miniAppType == "TESTRAI":
+                    # print("Running TestRAI Agent...")
+                    # async with client.session("TestRAI") as session:
+                    #     tools = await load_mcp_tools(session)
+
+                    #     mcp_agent = initialize_agent(
+                    # tools,
+                    # claude_3_7_sonnet_mcp,
+                    # agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
+                    #  verbose=True
+                    # )
+                    # response = await mcp_agent.ainvoke(full_prompt)
                 elif request.miniAppType == "TESTRAI":
                     print("Running TestRAI Agent...")
-                    async with client.session("TestRAI") as session:
-                        tools = await load_mcp_tools(session)
-
-                        mcp_agent = initialize_agent(
-                    tools,
-                    claude_3_7_sonnet_mcp,
-                    agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
-                     verbose=True
-                    )
-                    response = await mcp_agent.ainvoke(full_prompt)
+                    try:
+                        # Keep session alive for entire agent execution
+                        async with client.session("TestRAI") as session:
+                            tools = await load_mcp_tools(session)
+                            
+                            mcp_agent = initialize_agent(
+                                tools,
+                                claude_3_7_sonnet_mcp,
+                                agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
+                                verbose=True,
+                                max_iterations=10,
+                                handle_parsing_errors=True
+                            )
+                            
+                            # Execute agent and wait for completion INSIDE session context
+                            result = await mcp_agent.ainvoke(full_prompt)
+                            
+                            # Extract response properly
+                            if isinstance(result, dict):
+                                response = result.get("output", str(result))
+                            else:
+                                response = result
+                    except Exception as e:
+                        logging.error(f"TestRAI agent error: {str(e)}")
+                        # Return a graceful error response instead of crashing
+                        return {
+                            "answer": f"Test case generation failed. Please try again. Error: {str(e)}",
+                            "output": None,
+                            "chart": None,
+                            "sql": None,
+                            "python_code": None,
+                            "pricing": {"input_cost": 0, "output_cost": 0, "total_cost": 0},
+                            "miniAppType": request.miniAppType,
+                            "token_usage": {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}
+                        }
                 else:
                     if "call" in full_prompt:
                         print("Running Telecaller Agent...")
