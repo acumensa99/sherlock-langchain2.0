@@ -753,14 +753,12 @@ Please correct the SQL or Python code accordingly and return the updated version
                                 # Set Allowed Categories
                                 allowed_cats = rls.get("allowed_categories", [])
                                 if allowed_cats and "*" not in allowed_cats:
-                                    # Format as CSV string for RLS policy (string_to_array)
-                                    safe_cats = [
-                                        c.replace("'", "''") for c in allowed_cats
-                                    ]
-                                    cats_csv = ",".join(safe_cats)
+                                    # Format as JSON string for RLS policy (expecting jsonb array)
+                                    cats_json = json.dumps(allowed_cats)
+                                    safe_json = cats_json.replace("'", "''")
                                     conn.execute(
                                         text(
-                                            f"SET LOCAL app.allowed_categories = '{cats_csv}'"
+                                            f"SET LOCAL app.allowed_categories = '{safe_json}'"
                                         )
                                     )
 
