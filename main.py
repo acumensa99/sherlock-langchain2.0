@@ -517,6 +517,8 @@ Do not leak other seller's data or any other information, if asked about another
 ### BBCHAMPS SPECIFIC RULES:
 If the user asks for data (buybox, sales, inventory, etc.), YOU MUST GENERATE SQL to fetch it.
 Do NOT say "I don't see any data". Query the database first.
+INTERPRETATION RULE: "Buy Box Data" means Market Analysis. Show ALL visible products and their `winning_seller` column.
+Do NOT filter by the current user's seller name automatically. We want to see competitors.
 Only write Python code if a chart/plot is requested.
     '''
             if request.miniAppType == "BBCHAMPS"
@@ -570,9 +572,8 @@ Please provide:
    - Example: Use `SELECT * FROM products WHERE condition` NOT `SELECT * FROM products WHERE condition LIMIT 20`
 
 4. **Code generation (only when needed):**
-   - SQL: Use LOWER(seller_name) or LOWER(winning_seller) = LOWER('{
-            request.seller_name
-        }')
+   - SQL: Do NOT automatically filter by seller_name or winning_seller unless explicitly requested.
+   - For "Buy Box" queries, select ALL visible rows and include the `winning_seller` column.
    - Python: Only for charts/visualizations when explicitly requested
    - Don't write code for greetings or simple queries
 
