@@ -770,6 +770,24 @@ Please correct the SQL or Python code accordingly and return the updated version
                                         text(f"SET LOCAL app.max_days = '{max_days}'")
                                     )
 
+                                # Set Access Start Date
+                                start_date = rls.get("access_start_date")
+                                if start_date:
+                                    conn.execute(
+                                        text(
+                                            f"SET LOCAL app.access_start_date = '{start_date}'"
+                                        )
+                                    )
+
+                                # Set Access End Date
+                                end_date = rls.get("access_end_date")
+                                if end_date:
+                                    conn.execute(
+                                        text(
+                                            f"SET LOCAL app.access_end_date = '{end_date}'"
+                                        )
+                                    )
+
                             df = pd.read_sql(text(sql_code), conn)
                         logging.info(f"SQL returned {len(df)} rows.")
                         break  # Success
