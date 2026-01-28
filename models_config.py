@@ -46,7 +46,7 @@ def get_bedrock_model(model_id, region_name="us-east-1"):
 
 
 # Initialize Models
-llama_groq = get_groq_model()
+_real_groq_model = get_groq_model()
 
 claude_opus_4 = get_bedrock_model("us.anthropic.claude-opus-4-20250514-v1:0")
 claude_sonnet_4 = get_bedrock_model("us.anthropic.claude-sonnet-4-20250514-v1:0")
@@ -55,10 +55,12 @@ deepseek_r1 = get_bedrock_model("us.deepseek.r1-v1:0")
 llama3_70b = get_bedrock_model("meta.llama3-70b-instruct-v1:0")
 llama3_8b = get_bedrock_model("meta.llama3-8b-instruct-v1:0")
 
+# If Groq is unavailable, fallback to Bedrock Llama 3 8B (cheap/fast)
+llama_groq = _real_groq_model if _real_groq_model is not None else llama3_8b
+
 # Model Dictionary Registry
 models_dict = {
-    # If Groq is unavailable, fallback to Bedrock Llama 3 (meta.llama3-70b-instruct-v1:0)
-    "llama3-70b-8192": llama_groq if llama_groq is not None else llama3_70b,
+    "llama3-70b-8192": llama_groq,
     "anthropic.claude-opus-4-20250514-v1:0": claude_opus_4,
     "anthropic.claude-sonnet-4-20250514-v1:0": claude_sonnet_4,
     "anthropic.claude-3-7-sonnet-20250219-v1:0": claude_3_7_sonnet,

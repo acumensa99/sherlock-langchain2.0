@@ -12,6 +12,9 @@ from typing import Any, Dict, List, Optional
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+
+pd.set_option("future.no_silent_downcasting", True)
+
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -26,6 +29,7 @@ from models_config import (
     AUTOCOMPLETE_ENABLED,
     DATABASE_URL,
     GROQ_API_KEY,
+    llama3_8b,
     llama_groq,
     models_dict,
 )
@@ -180,23 +184,31 @@ async def generate_title(request: QueryRequest):
     Generates a chat title. Fails gracefully if LLM is down.
     """
     try:
-        # Check if Groq is available
-        if not llama_groq:
-            logging.warning("Groq unavailable for title generation. Returning default.")
+        # Use Llama 3 8B (AWS) for fast title generation, fallback to Groq if needed
+        model = llama3_8b if llama3_8b else llama_groq
+
+        if not model:
+            logging.warning(
+                "No model available for title generation. Returning default."
+            )
             return {"title": "New Chat"}
 
         logging.info(f"Generating title for: {request.question}")
         formatted_prompt = TITLE_GENERATION_PROMPT.format(question=request.question)
 
         # Async invoke
-        response = await llama_groq.ainvoke(formatted_prompt)
+        response = await model.ainvoke(formatted_prompt)
         response_text = (
             response.content if hasattr(response, "content") else str(response)
         )
 
         # Extract title
         title_match = re.search(r"ANSWER:\s*(.*)", response_text, re.DOTALL)
-        title = title_match.group(1).strip() if title_match else "New Chat"
+        title = (
+            title_match.group(1).strip().strip('"').strip("'")
+            if title_match
+            else "New Chat"
+        )
 
         return {"title": title}
 
@@ -265,8 +277,11 @@ async def autocomplete_business(request: QueryRequestAutocomplete):
         return {"completions": []}
 
     try:
-        if not llama_groq:
-            logging.warning("Groq model not initialized. Skipping autocomplete.")
+        # Use Llama 3 8B (AWS) for fast autocomplete
+        model = llama3_8b if llama3_8b else llama_groq
+
+        if not model:
+            logging.warning("No model available for autocomplete. Skipping.")
             return {"completions": []}
 
         formatted_prompt = AUTOCOMPLETE_BUSINESS_PROMPT.format(
@@ -274,7 +289,7 @@ async def autocomplete_business(request: QueryRequestAutocomplete):
         )
 
         # Async invoke
-        response = await llama_groq.ainvoke(formatted_prompt)
+        response = await model.ainvoke(formatted_prompt)
         response_text = (
             response.content if hasattr(response, "content") else str(response)
         )
@@ -504,7 +519,43 @@ async def query(request: QueryRequest):
                                         f"SET LOCAL app.current_company_id = '{rls.get('company_id')}'"
                                     )
                                 )
-                            # Add other RLS keys as needed
+
+                            # Set Allowed Categories
+                            allowed_cats = rls.get("allowed_categories", [])
+                            if allowed_cats and "*" not in allowed_cats:
+                                # Format as JSON string for RLS policy (expecting jsonb array)
+                                cats_json = json.dumps(allowed_cats)
+                                safe_json = cats_json.replace("'", "''")
+                                conn.execute(
+                                    text(
+                                        f"SET LOCAL app.allowed_categories = '{safe_json}'"
+                                    )
+                                )
+
+                            # Set Max Days
+                            max_days = rls.get("max_days")
+                            if max_days:
+                                conn.execute(
+                                    text(f"SET LOCAL app.max_days = '{max_days}'")
+                                )
+
+                            # Set Access Start Date
+                            start_date = rls.get("access_start_date")
+                            if start_date:
+                                conn.execute(
+                                    text(
+                                        f"SET LOCAL app.access_start_date = '{start_date}'"
+                                    )
+                                )
+
+                            # Set Access End Date
+                            end_date = rls.get("access_end_date")
+                            if end_date:
+                                conn.execute(
+                                    text(
+                                        f"SET LOCAL app.access_end_date = '{end_date}'"
+                                    )
+                                )
 
                         df = pd.read_sql(text(sql_code), conn)
                     logging.info(f"SQL Success. Rows: {len(df)}")
@@ -558,15 +609,13 @@ async def query(request: QueryRequest):
         if df is not None:
             # Clean dataframe for JSON serialization
             df.replace([np.inf, -np.inf], np.nan, inplace=True)
-            df.fillna("null", inplace=True)
+            df = df.astype(object).fillna("null")
 
             # Remove sensitive or tech columns like ID if preferred, though usually ID is useful
             # df = df.loc[:, ~df.columns.str.contains("^id$")]
 
             # Format dates
-            df = df.applymap(
-                lambda x: x.isoformat() if isinstance(x, pd.Timestamp) else x
-            )
+            df = df.map(lambda x: x.isoformat() if isinstance(x, pd.Timestamp) else x)
 
             output_dict = truncate_dataframe(df).to_dict(orient="records")
 

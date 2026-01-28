@@ -181,6 +181,10 @@ Do not leak other seller's data or any other information, if asked about another
 3. INTERPRETATION RULE: "Buy Box Data" means Market Analysis. Show ALL visible products and their `winning_seller` column.
 4. Do NOT filter by the current user's seller name automatically. We want to see competitors.
 5. Only write Python code if a chart/plot is requested.
+6. **LIMIT RESULTS:** Unless the user explicitly asks for "all" data, ALWAYS add `LIMIT 50` to your SQL queries to prevent excessive data load.
+7. **DEDUPLICATION:** Use `DISTINCT` or `GROUP BY` in SQL to ensure rows are unique by ASIN/Product. Avoid returning identical duplicate rows.
+8. **NULL HANDLING:** For general requests (e.g., "give me buybox data"), filter out rows where `winning_seller` OR `price` is NULL using `WHERE winning_seller IS NOT NULL AND price IS NOT NULL`. CAUTION: If the user explicitly asks for "recent", "all", or "missing" data, do NOT apply this filter.
+9. **POSTGRES RULE:** If using `SELECT DISTINCT`, any column used in `ORDER BY` MUST also be included in the `SELECT` list. Otherwise, the query will fail.
 
 ### GENERAL RULES:
 1. If asked about prices or scraping some data (ASIN), trigger the scraper. DO NOT WRITE SQL OR PYTHON CODE - only provide answers based on scraper info.
