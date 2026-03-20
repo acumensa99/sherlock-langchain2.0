@@ -522,13 +522,33 @@ async def query(request: QueryRequest):
 
                             # Set Allowed Categories
                             allowed_cats = rls.get("allowed_categories", [])
-                            if allowed_cats and "*" not in allowed_cats:
-                                # Format as JSON string for RLS policy (expecting jsonb array)
-                                cats_json = json.dumps(allowed_cats)
+                            if allowed_cats:
+                                if "*" in allowed_cats:
+                                    cats_json = '["*"]'
+                                else:
+                                    # Format as JSON string for RLS policy (expecting jsonb array)
+                                    cats_json = json.dumps(allowed_cats)
+
                                 safe_json = cats_json.replace("'", "''")
                                 conn.execute(
                                     text(
                                         f"SET LOCAL app.allowed_categories = '{safe_json}'"
+                                    )
+                                )
+
+                            # Set Allowed Locations
+                            allowed_locs = rls.get("allowed_locations", [])
+                            if allowed_locs:
+                                if "*" in allowed_locs:
+                                    locs_json = '["*"]'
+                                else:
+                                    # Format as JSON string for RLS policy (expecting jsonb array)
+                                    locs_json = json.dumps(allowed_locs)
+
+                                safe_loc_json = locs_json.replace("'", "''")
+                                conn.execute(
+                                    text(
+                                        f"SET LOCAL app.allowed_locations = '{safe_loc_json}'"
                                     )
                                 )
 
